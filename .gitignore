@@ -1,4 +1,5 @@
 ## User defined ignores
+.vscode/
 example/
 test/
 
