@@ -1,2 +1,29 @@
 \chapter{Developer documentation}
-\label{ch:impl}
+\label{impl}
+
+\section{Developer environment}
+
+The program uses the \textbf{C++20} major version. Libraries were installed using the \textbf{vcpgk} package manager.
+
+I developed the application on a laptop with \textbf{Windows 11}. I used Microsoft's IDE, \textbf{Visual Studio 2022} utilizing the \textbf{Desktop development with C++} workload and the \textbf{GLSL language integration} extension.
+
+\subsection{Utilized libraries}
+
+The following libraries and versions have been used for the application. Here is the command that was used to install the libraries using vcpkg: \verb|.\vcpkg install sdl3 sdl3-image[jpeg,png] glew glm imgui[opengl3-binding,sdl3-binding] freetype --triplet x64-windows|
+
+\begin{itemize}
+    \item \textbf{OpenGL:} (Apache License 2.0) - graphics rendering library.
+    \item \textbf{OpenGL Extension Wrangler library (GLEW):} (MIT License) - library providing an interface to OpenGL.
+    \item \textbf{OpenGL Mathematics:} (MIT License) - math functions, vectors, matrices, transformations, easing functions and more.
+    \item \textbf{Simple DirectMedia Layer (SDL):} (zlib License) - window and input manager.
+    \item \textbf{Dear ImGui:} (MIT License) - graphical user interface for debugging and tooling.
+    \item \textbf{FreeType:} (The FreeType Project License) - library for font rendering.
+\end{itemize}
+
+\subsection{Compilation}
+
+The project needs to be compiled with the following macros being defined: \verb|SDL_MAIN_HANDLED|, \verb|GLM_ENABLE_EXPERIMENTAL|, \verb|GLM_FORCE_SWIZZLE|.
+
+\subsection{Runtime environment}
+
+Compiling the program in \textit{Release} mode assembles the program in the \textit{x64/Release/} directory. \textit{view.exe} expects the assets, fonts and shaders to be in their respective directories\footnote{\textit{assets/}, \textit{fonts/}, \textit{shaders/}}: Visual Studio 2022 should take care of this. This directory can now be moved, as this is the full application.
