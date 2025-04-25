@@ -5,11 +5,11 @@
 
 The program uses the \textbf{C++20} major version. Libraries were installed using the \textbf{vcpgk} package manager.
 
-I developed the application on a laptop with \textbf{Windows 11}. I used Microsoft's IDE, \textbf{Visual Studio 2022} utilizing the \textbf{Desktop development with C++} workload and the \textbf{GLSL language integration} extension.
+I developed the application on a laptop with \textbf{Windows 11}. I used Microsoft's IDE, \textbf{Visual Studio 2022} utilizing the \textbf{Desktop development with C++} workload and the \textbf{GLSL language integration} extension. It used version \textbf{10.0.22621.0} of the \textbf{Windows SDK}.
 
 \subsection{Utilized libraries}
 
-The following libraries and versions have been used for the application. Here is the command that was used to install the libraries using vcpkg: \verb|.\vcpkg install sdl3 sdl3-image[jpeg,png] glew glm imgui[opengl3-binding,sdl3-binding] freetype --triplet x64-windows|
+The following libraries and versions have been used for the application. Use this command to install the required dependencies using vcpkg: \verb|.\vcpkg install sdl3 sdl3-image[jpeg,png] glew glm imgui[opengl3-binding,sdl3-binding] freetype --triplet x64-windows|
 
 \begin{itemize}
     \item \textbf{OpenGL:} (Apache License 2.0) - graphics rendering library.
@@ -26,4 +26,4 @@ The project needs to be compiled with the following macros being defined: \verb|
 
 \subsection{Runtime environment}
 
-Compiling the program in \textit{Release} mode assembles the program in the \textit{x64/Release/} directory. \textit{view.exe} expects the assets, fonts and shaders to be in their respective directories\footnote{\textit{assets/}, \textit{fonts/}, \textit{shaders/}}: Visual Studio 2022 should take care of this. This directory can now be moved, as this is the full application.
+Compiling the program in \textit{Release} mode assembles the program in the \textit{x64/Release/} directory. \textit{view.exe} expects the assets, fonts and shaders to be in their respective directories\footnote{\textit{assets/}, \textit{fonts/}, \textit{shaders/}}: Visual Studio 2022 should take care of this during compilation. This directory can now be archived or moved, as it contains all the files required for running the application.

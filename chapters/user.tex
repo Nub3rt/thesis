@@ -30,9 +30,16 @@ The usage of the software does not require any form of setup or installation. Af
 
 The user can quit the application at any point by clicking the \textit{Close} button of the window, or by pressing the following keyboard combination: \textbf{Alt + F4}
 
-Fullscreen mode can be toggled at any point by pressing the following key: \textbf{F11}
+Fullscreen mode can be toggled at any point by pressing the key \textbf{F11} key.
 
 \subsection{Menu}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{menu}
+    \caption{The menu screen of the application with an ongoing game.}
+    \label{fig:menu}
+\end{figure}
 
 The menu screen has the following three buttons the user can interact with:
 
@@ -43,6 +50,13 @@ The menu screen has the following three buttons the user can interact with:
 \end{itemize}
 
 \subsection{Game}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{game}
+    \caption{Game screen in the action state.}
+    \label{fig:game}
+\end{figure}
 
 The player should be familiar with the \href{https://fryxgames.se/wp-content/uploads/2023/04/TMRULESFINAL.pdf}{\textit{game rules}}, in particular with the additions of the solo variant. Furthermore, these modifications are in effect:
 \begin{compactitem}
@@ -56,23 +70,52 @@ The player should be familiar with the \href{https://fryxgames.se/wp-content/upl
 The game can be in different so called \textit{'states'}. A state just means that certain actions may or may not be available to the player. The states are:
 
 \begin{itemize}
-    \item \textbf{Action state:}\label{user:usage:actionstate} This state is almost the same as the \textit{Action phase} of the board game. The player can play cards from their hand, use standard projects or convert resources, use actions on their active cards and end the generation with the \hyperref[user:usage:end]{\textit{End button}}. The slight difference here is when using the \hyperref[user:usage:sell]{\textit{Sell patents}} standard project, the game enters the \hyperref[user:usage:sellstate]{\textit{Sell state}} where they can actually sell cards in their hand.
+    \item \textbf{Action state:}\label{user:usage:action_state} This state is almost the same as the \textit{Action phase} of the board game. The player can play cards from their hand, use standard projects or convert resources, use actions on their active cards and end the generation with the \hyperref[user:usage:end]{\textit{End button}}. The slight difference here is when using the \hyperref[user:usage:sell]{\textit{Sell patents}} standard project, the game enters the \hyperref[user:usage:sell_state]{\textit{Sell state}} where they can actually sell cards in their hand.
 
-    \item \textbf{Sell state:}\label{user:usage:sellstate} When using the \hyperref[user:usage:sell]{\textit{Sell patents}} standard project, the game enters this state. In this state only the following actions can be performed:
+    \item \textbf{Sell state:}\label{user:usage:sell_state} When using the \hyperref[user:usage:sell]{\textit{Sell patents}} standard project, the game enters this state. In this state only the following actions can be performed:
     \begin{compactitem}
-        \item All cards in the \hyperref[user:usage:hand]{\textit{hand}} glow red. The player has the option to drag out any card from their hand and play it. Playing the card sells it, discarding the card and giving 1 Credit to the player. For more detail about dragging out and playing cards, check the description of the \hyperref[user:usage:hand]{\textit{hand}}.
-        \item The label of the \hyperref[user:usage:end]{\textit{End button}} is replaced. Clicking on it exits the \textit{Sell state}, going back to the \hyperref[user:usage:actionstate]{\textit{Action state}}.
+        \item All cards in the \hyperref[user:usage:hand]{\textit{hand}} glow red. The player has the option to drag out any card from their hand and play it. Playing the card sells it, discarding the card and giving one Credit to the player. For more detail about dragging out and playing cards, check the description of the \hyperref[user:usage:hand]{\textit{hand}}.
+        \item The label of the \hyperref[user:usage:end]{\textit{End button}} is replaced. Clicking on it exits the \textit{Sell state}, going back to the \hyperref[user:usage:action_state]{\textit{Action state}}.
     \end{compactitem}
 
-    \item \textbf{Payment confirmation state:} When playing a card or using an action that can be bought with resources, the game will enter this state. In this state every action is disabled, and a window is shown where the player can confirm the amount of the resources they wish to spend. Confirming the payment advances the game, and returns to the \hyperref[user:usage:actionstate]{\textit{Action state}}.
+    \item \textbf{Payment confirmation state:} When playing a card or using an action that can be bought with resources, the game will enter this state. In this state every action is disabled, and a window is shown where the player can confirm the amount of the resources they wish to spend. Confirming the payment advances the game, and returns to the \hyperref[user:usage:action_state]{\textit{Action state}}.
 
-    \item \textbf{Placement confirmation state:}\label{user:usage:placement} When playing a card or using a standard project or conversion that places a tile, the game will enter this state. The border of the tiles on \hyperref[user:usage:mars]{\textit{Mars}} that are valid will be colored white, and the others will be dark. In this state every action is disabled, but the tiles of \hyperref[user:usage:mars]{\textit{Mars}} are clickable, and clicking on a valid one places the tile there. A hint text informs the player what kind of tile they are placing currently. Confirming the placement advances the game, and returns to the \hyperref[user:usage:actionstate]{\textit{Action state}}.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.7\textwidth]{confirm_payment}
+        \caption{Payment confirmation window.}
+        \label{fig:confirm_payment}
+    \end{figure}
 
-    \item \textbf{Research state:} In the \hyperref[user:usage:actionstate]{\textit{Action state}}, clicking on the \hyperref[user:usage:end]{\textit{End button}} automatically performs the production phase, and after that the game will enter this state. In this state four cards will appear on the screen. The player needs to decide how many and which they want to purchase. Initially all of them are set for purchasing, and the player can toggle them between purchasing and discarding. This is backed up with visual clues. A hint text informs the player how much they are going to play for the selected cards. The label of the \hyperref[user:usage:end]{\textit{End button}} is replaced. Clicking on it confirms the research, and the game returns to the \hyperref[user:usage:actionstate]{\textit{Action state}}.
+    \item \textbf{Placement confirmation state:}\label{user:usage:placement_state} When playing a card or using a standard project or conversion that places a tile, the game will enter this state. The border of the tiles on \hyperref[user:usage:mars]{\textit{Mars}} that are valid will be colored white, and the others will be dark. In this state every action is disabled, but the tiles of \hyperref[user:usage:mars]{\textit{Mars}} are clickable, and clicking on a valid one places the tile there. A hint text informs the player what kind of tile they are placing currently. Confirming the placement advances the game, and returns to the \hyperref[user:usage:action_state]{\textit{Action state}}.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=1.0\textwidth]{confirm_placement}
+        \caption{Placement confirmation. On the top, the tile to be placed is shown, and valid locations have a white border.}
+        \label{fig:confirm_placement}
+    \end{figure}
+
+    \item \textbf{Research state:}\label{user:usage:research_state} In the \hyperref[user:usage:action_state]{\textit{Action state}}, clicking on the \hyperref[user:usage:end]{\textit{End button}} automatically performs the production phase, and after that the game will enter this state. In this state four cards will appear on the screen. The player needs to decide how many and which they want to purchase. Initially all of them are set for purchasing, and the player can toggle them between purchasing and discarding. This is backed up with visual cues. A hint text informs the player how much they are going to play for the selected cards. The label of the \hyperref[user:usage:end]{\textit{End button}} is replaced. Clicking on it confirms the research, and the game returns to the \hyperref[user:usage:action_state]{\textit{Action state}}.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=1.0\textwidth]{research}
+        \caption{Research phase.}
+        \label{fig:research}
+    \end{figure}
 
     \item \textbf{Post last generation state:} After ending the last generation and performing production phase, if the player has enough Plant resources to convert them to a greenery, the game will enter this state. Here, only the \hyperref[user:usage:convertplants]{\textit{Convert Plants to greenery}} standard project can be used and the \hyperref[user:usage:end]{\textit{End button}} to finish the game.
 
-    \item \textbf{Game over state:} After the last generation the game will enter this state. The game will display if the player has won or not, and the amount of victory points they have earned. No actions are available in this state.
+    \item \textbf{Game over state:} After the last generation the game will enter this state. The game will display if the player has won or not, and the amount of victory points they have earned. Here, the player's only option is returning to the menu.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=1.0\textwidth]{game_over}
+        \caption{End of a game.}
+        \label{fig:game_over}
+    \end{figure}
+
 \end{itemize}
 
 \subsubsection{Elements}
@@ -83,40 +126,103 @@ The game screen consists of the following visual elements:
     \item \textbf{Menu button:}\label{user:usage:menu} Located in the top left corner. This button can always be clicked, and takes the player back to the menu screen. The ongoing game gets paused, and can be resumed by selecting the \hyperref[user:usage:continue]{\textit{Continue button}} on the menu screen.
 
     \item \textbf{End button:}\label{user:usage:end} Located on the right side. It can have multiple behaviors, depending on the \hyperref[user:usage:state]{\textit{state}}.
+    \begin{compactitem}
+        \item In the \hyperref[user:usage:action_state]{\textit{Action state}}, the end button ends the generation.
+        \item In the \hyperref[user:usage:sell_state]{\textit{Sell state}}, the end button exits the \hyperref[user:usage:sell_state]{\textit{Sell state}}.
+        \item In the \hyperref[user:usage:research_state]{\textit{Research state}}, the end button confirms the research.
+    \end{compactitem}
 
-    \item \textbf{Standard projects and converting resources:} Located on the left side of the screen under the \hyperref[user:usage:menu]{\textit{Menu button}}. When they can be used, hovering over them gives the visual clue of enlarging the row of the action. From top to bottom:
+    \item \textbf{Standard projects and converting resources:} Located on the left side of the screen under the \hyperref[user:usage:menu]{\textit{Menu button}}. When they can be used, hovering over them gives the visual cue of enlarging the row of the action. From top to bottom:
     \begin{itemize}
-        \item \textbf{Sell patents:}\label{user:usage:sell} The application enters the \hyperref[user:usage:sellstate]{\textit{Sell state}}.
-        \item \textbf{Power Plant:} For 11 Credits, you increase your Energy production 1 step.
+        \item \textbf{Sell patents:}\label{user:usage:sell} The application enters the \hyperref[user:usage:sell_state]{\textit{Sell state}}.
+        \item \textbf{Power Plant:} For 11 Credits, you increase your Energy production one step.
         \item \textbf{Asteroid:} For 14 Credits, you raise temperature one step.
-        \item \textbf{Aquifer:} For 18 Credits, you place 1 ocean tile.
-        \item \textbf{Greenery:} For 23 Credits, you place 1 greenery tile.
-        \item \textbf{City:} For 25 Credits, you place 1 city tile and increase your Credit production 1 step.
-        \item \textbf{Convert Plants to greenery:} \label{user:usage:convertplants} For 8 Plant resources, you place 1 greenery tile.
-        \item \textbf{Convert Heat to temperature:} For 8 Heat resources, you raise temperature 1 step.
+        \item \textbf{Aquifer:} For 18 Credits, you place one ocean tile.
+        \item \textbf{Greenery:} For 23 Credits, you place one greenery tile.
+        \item \textbf{City:} For 25 Credits, you place one city tile and increase your Credit production one step.
+        \item \textbf{Convert Plants to greenery:} \label{user:usage:convertplants} For 8 Plant resources, you place one greenery tile.
+        \item \textbf{Convert Heat to temperature:} For 8 Heat resources, you raise temperature one step.
     \end{itemize}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.4\textwidth]{sp}
+        \caption{Standard projects and resource conversions.}
+        \label{fig:sp}
+    \end{figure}
 
     \item \textbf{Generation counter:} Located in the bottom left corner. Displays the current generation.
 
-    \item \textbf{Global parameters:} Located on the upper right side of the screen. Shown parameters in order are: temperature, ocean count, oxygen, terraform rating. The three global parameter's indicator turn green when they have reached their respective goal.
+    \item \textbf{Global parameters:} Located on the upper right side of the screen. Shown parameters in order are: temperature, ocean count, oxygen, terraform rating. The three global parameter's indicators turn green when they have reached their respective goal.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.2\textwidth]{parameters}
+        \caption{Global parameters and terraform rating.}
+        \label{fig:parameters}
+    \end{figure}
 
     \item \textbf{Resources:} Located on the lower right side of the screen. Consists of three columns: the first is the amount of resources, the second specifies the resource type and the third is the production output of said resource. The resources from top to bottom are as follows: Credit, Steel, Titanium, Plant, Energy, Heat. Values cannot be reduced below 0, except for Credit production which can be at a minimum of -5.
 
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.25\textwidth]{resources}
+        \caption{Resources. Notice how Credit generation is the only one that can go into negative, down to -5.}
+        \label{fig:resources}
+    \end{figure}
+
     \item \textbf{Hand:}\label{user:usage:hand} Located at the bottom of the screen. Cards are by default hoverable: moving the mouse over a card enlarges it, showing the full card.\\
     Some \hyperref[user:usage:state]{\textit{states}} allow the cards to be 'played'. In this case when a card is hovered, it can be dragged around with the mouse by pressing and holding the left mouse button. Two things can happen when the player releases the card: if the position of the mouse (and card) is above an invisible line, the card will get 'played', which is defined by the \hyperref[user:usage:state]{\textit{state}}. Otherwise, it will go back to the player's hand. There is always a visual indicator showing which one is about to happen.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=1.0\textwidth]{play_line}
+        \caption{Approximate location of the above-mentioned invisible line.}
+        \label{fig:play_line}
+    \end{figure}
+
     \begin{compactitem}
-        \item In the \hyperref[user:usage:actionstate]{\textit{Action state}}, all cards that can be played will have a green glowing effect. If the mouse is over the invisible line, the card will have a blue glowing effect. The player can drag non-playable cards, but going over the invisible line automatically lets go of the dragged card.
-        \item In the \hyperref[user:usage:sellstate]{\textit{Sell state}}, all cards will have a red glowing effect. If the mouse is over the invisible line, the card will have a faded out effect. 'Playing' a card will sell it.
+        \item In the \hyperref[user:usage:action_state]{\textit{Action state}}, all cards that can be played will have a green glowing effect. If the mouse is over the invisible line, the card will have a blue glowing effect. The player can drag non-playable cards, but going over the invisible line automatically lets go of the dragged card.
+        \item In the \hyperref[user:usage:sell_state]{\textit{Sell state}}, all cards will have a red glowing effect. If the mouse is over the invisible line, the card will have a faded out effect. 'Playing' a card will sell it.
     \end{compactitem}
+
+    \begin{figure}[H]
+        \centering
+        \subcaptionbox{Green highlight, usually indicating that the card can be played.}{
+            \includegraphics[width=0.3\linewidth]{highlight_playable}
+        }
+        \hspace{5pt}
+        \subcaptionbox{Blue highlight, usually indicating that the card can be used or will be played.}{
+            \includegraphics[width=0.3\linewidth]{highlight_action}
+        }
+        
+        \subcaptionbox{Red highlight, indicating that the card can be sold.}{
+            \includegraphics[width=0.3\linewidth]{highlight_sell}
+        }
+        \hspace{5pt}
+        \subcaptionbox{Faded out card, usually indicating that the card cannot be used, will not be bought or will be sold.}{
+            \includegraphics[width=0.3\linewidth]{highlight_faded}
+        }
+        \label{fig:highlights}
+    \end{figure}
 
     \item \textbf{Played card panels:} Four panels are located on the screen: action cards on the bottom left, event cards, automated cards and effect cards on the top. The panels open when they get clicked on, and close when any part of their body gets clicked, except the cards. They can also be toggled with the following keyboard keys: \textbf{U}, \textbf{I}, \textbf{O} and \textbf{P}. These can be opened at most times, but they do get closed automatically at certain events.\\
     By default, only 8 cards can fit on a panel. If there are more out of the view, an arrow will be shown, which can be used to step one page in that direction. This can also be done with the \textbf{Left} and \textbf{Right} keys.\\
     The action panel has further functionality: the card's actions can be used from here. If a card can be used, it will have a blue glowing effect. In this case, clicking on it will use the action of the card. If it was already used in the generation, it will have a faded out effect. If it was not used in the generation but can't be used, it won't have any effects.
 
-    \item \textbf{Mars}\label{user:usage:mars} Located in the center of the board. Empty tiles show their respective placement bonuses. Tiles owned by the player will have a player icon. Tiles reserved for oceans have a blue border. Placement of tiles is described at \hyperref[user:usage:placement]{\textit{Placement confirmation state}}.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=1.0\textwidth]{panel}
+        \caption{Action card panel. \textit{Equatorial Magnetizer} and \textit{Martian Rails} have been used this generation. While the others are still usable, \textit{Ore Processor} cannot be used at this moment (the player does not have the required cost of 4 Energy).}
+        \label{fig:panel}
+    \end{figure}
+
+    \item \textbf{Mars}\label{user:usage:mars} Located in the center of the board. Empty tiles show their respective placement bonuses. Tiles owned by the player will have a player icon. Tiles reserved for oceans have a blue border. How placing tiles works is further explained under the section \hyperref[user:usage:placement_state]{\textit{Placement confirmation state}}.
 \end{itemize}
 
 \subsection{Debug tools}
+
+\todo{move this section to developer documentation}
 
 There are a few debug tools built in to the application. Both screens have a debug window that can be toggled by pressing \textbf{Ctrl + D}. 
 
@@ -127,6 +233,6 @@ The debug window allows the user to set a seed for their game. Starting two game
 \subsubsection{Game}
 
 The debug window allows the user to give themselves resources, resource production, raise their terraform rating, draw cards, raise temperature, raise oxygen and place ocean, greenery or city tiles.\\
-\textbf{Warning!} The debug tool may cause crashes! I advise the user to only use it in the Action state.
+\textbf{Warning!} The debug tool should only be used in the Action State. Usage in other states may cause the application to crash.
 
 Pressing \textbf{F3} toggles the basic camera and the editorial camera. With the editorial camera, the user can use look around with the mouse and fly around with the following keys: \textbf{A}, \textbf{W}, \textbf{S}, \textbf{D}, \textbf{E}, \textbf{Q}\footnote{A - left, W - forward, S - back, D - right, E - up, Q - down}.
