@@ -1,0 +1,80 @@
+@startuml class_iterators
+
+skinparam classAttributeIconSize 0
+
+package ::model::boards {
+    package ConcreteBoard <<Node>> {
+        class Iterator{
+            + Iterator()
+            + ~Iterator()
+
+            + operator*() : Tile& {abstract}
+            + operator->() : Tile* {abstract}
+
+            + operator++() : Iterator& {abstract}
+
+            + operator==( Iterator& ) : bool {abstract}
+            + operator!=( Iterator& ) : bool {abstract}
+        }
+
+        class IteratorWrapper{
+            - _iterator : Iterator*
+
+            + IteratorWrapper()
+            + ~IteratorWrapper()
+
+            + operator*() : Tile&
+            + operator->() : Tile*
+
+            + operator++() : Iterator&
+
+            + operator==( Iterator& ) : bool
+            + operator!=( Iterator& ) : bool
+        }
+    }
+
+        note left of IteratorWrapper::operator*
+            return _iterator->operator*();
+        end note
+
+        note left of IteratorWrapper::operator->
+            return _iterator->operator->();
+        end note
+
+        note left of IteratorWrapper::operator++
+            return _iterator->operator++();
+        end note
+
+        note left of IteratorWrapper::operator==
+            IteratorWrapper* other_wrapper = dynamic_cast<IteratorWrapper*>( &other );
+            return other_wrapper && *_iterator == *other_wrapper->_iterator;
+        end note
+
+        note left of IteratorWrapper::operator!=
+            return !(*this == other);
+        end note
+
+    package TharsisConcreteBoard <<Node>> {
+        class TharsisIterator{
+            - _ptr : Tile*
+
+            + TharsisIterator()
+            + TharsisIterator( Tile* )
+            + ~TharsisIterator()
+
+            + operator*() : Tile&
+            + operator->() : Tile*
+
+            + operator++() : Iterator&
+
+            + operator==( Iterator& ) : bool
+            + operator!=( Iterator& ) : bool
+        }
+    }
+
+    Iterator <|-- IteratorWrapper
+    Iterator <|- TharsisIterator
+
+}
+
+@enduml

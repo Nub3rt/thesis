@@ -27,3 +27,163 @@ The project needs to be compiled with the following macros being defined: \verb|
 \subsection{Runtime environment}
 
 Compiling the program in \textit{Release} mode assembles the program in the \textit{x64/Release/} directory. \textit{view.exe} expects the assets, fonts and shaders to be in their respective directories\footnote{\textit{assets/}, \textit{fonts/}, \textit{shaders/}}: Visual Studio 2022 should take care of this during compilation. This directory can now be archived or moved, as it contains all the files required for running the application.
+
+
+\section{Specification}
+
+\subsubsection*{Menu}
+
+The player should be able to start a new game and exit the application. Furthermore, if there is an ongoing game, the user should be able to continue said game.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{usecase_menu}
+    \caption{Use case diagram of the menu screen.}
+    \label{fig:usecase:menu}
+\end{figure}
+
+\subsubsection*{Game}
+
+The player should always have the option to leave the game. Available use cases change based on the \hyperref[user:usage:state]{\textit{state}} of the game.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{usecase_game}
+    \caption{Use case diagram of the game screen.}
+    \label{fig:usecase:game}
+\end{figure}
+
+Increasing a global parameter always increases the player's terraform rating.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{usecase_actions}
+    \caption{Detailed use cases of the Action state.}
+    \label{fig:usecase:actions}
+\end{figure}
+
+
+\section{Architecture}
+
+The application has two layers: \textit{Model} and \textit{View}. Business logic is completely separated in the \textit{Model}, and is platform independent. This means that separate frontends could be developed for this one backend.\\
+The main aspect during development was extensibility: there are multiple boards that can be played on, different decks using different cards, extensions which add new cards, new resources, or even new game features. In this documentation you can find multiple explanations for implementing new varieties.
+
+View manages and renders the window, stores information for rendering and communicates with the \textit{Model}. My implementation used OpenGL for rendering.
+
+The \textit{App} class holds together the application: it stores \textit{View} instances, and injects instances of the \textit{Model} into the corresponding \textit{View} instance.
+
+\textit{main.cpp} is the entry point for the application. It manages the following responsibilities:
+\begin{compactitem}
+    \item Initializing submodules and libraries.
+    \item Instantiate and initialize an \textit{App} instance.
+    \item Run the \textit{render loop}. Here, it handles window events and forwards them to \textit{App}, such as mouse and keyboard input. \textit{App}'s \textit{Update} and \textit{Render} methods are called here.
+    \item Clean up once the application is about to exit.
+\end{compactitem}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{package}
+    \caption{Package diagram of the application}
+    \label{fig:package}
+\end{figure}
+
+Each file is self-contained, and only includes headers from the standard library other than the project. All enumerated values are \textit{enum classes}.
+
+There are some classes that have circular dependencies, for example \textit{GameModel} and \textit{GameModelState}. This was made possible with the following steps:
+\begin{itemize}
+    \item Create \textit{forward declaration headers} for the classes. This header should only have the declaration of it's class in it. Notice the naming of the file.
+    \lstset{caption={game\_model.fwd.hpp}}
+    \begin{lstlisting}[language={C++}]
+namespace model
+{
+class GameModel;
+}
+    \end{lstlisting}
+    \item In the header files, the first lines should be including every \textit{*.fwd.hpp} file that is involved in the circular dependency. Include the rest of the header files as normal. DO NOT include the normal header file of other classes in the circular dependency.
+    \item In the \textit{*.cpp} files, include the normal headers of all the classes needed.
+\end{itemize}
+
+This structure solves these circular dependencies, however, there are a few drawbacks:
+
+\begin{itemize}
+    \item Since in the header files only the declaration of the other classes is present, no function calls can be made here. This means that inline functions cannot use the other classes.
+    \item From the previous point, it is apparent that classes participating cannot be template classes, as these require all their definitions in their respective header files.
+\end{itemize}
+
+There is some leeway though: one header file from the two can include the other one. In this case, the structure of files and includes should still be upheld.
+
+\subsection{Model}
+
+Every code in this project is under the namespace \textit{::model}.
+
+\subsubsection{The board}
+
+The \textit{::model::boards} namespace contains the part of the code that implements the game board. Mars is made up of hexes, and to be more specific, the hexes have pointy-top orientation. Storing tables made up of hexes is not trivial, and there are multiple ways to implement it.
+
+\todo{forrásmegjelölés}
+
+I choose to go with the axial coordinate system. Here every square has a $q$ and an $r$ coordinate. Increasing the $q$ coordinate moves right horizontally, and increasing the $r$ coordinate moves down, but instead of vertically, it moves on the line you get by rotating the $q$ axis $60^\circ$ in the negative direction. This alignment is matches with the usual layout in programming, where the $y$-axis is directed downwards.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{axial}
+    \caption{The axial coordinate system. Notice the third coordinate in a lighter color.}
+    \label{fig:axial}
+\end{figure}
+
+It is important to note, that the axial coordinates are derived from cube coordinates, which have a third coordinate, $s$. But since the equation $q + r + s = 0$ is true for all tiles, we can identify each square with just two coordinates, and calculate $s$ if we need it.
+
+The \textit{::model::boards} namespace has one enumerated data type, \verb|TileType|. \todo{ezt itt ki kell jobban fejteni, vagy elég hogy az osztálydiagrammon rajta van?}
+
+\subsubsection*{Tile}
+
+This class represents a single tile on the board. For convenience, they store their $q$ and $r$ positions, as well as their current type and owner. Oceans cannot be owned, but an empty tile can have an owner. Placement bonuses are also stored in each class and can be applied to the placer.
+
+\subsubsection*{Boards}
+
+To implement different boards in the application, I have decided to use the \textit{bridge design pattern}, as
+\begin{compactitem}
+    \item it hides the underlying data structure in the form of the implementor,
+    \item it enables different board layouts and implementations, as classes can derive from the implementor, each one representing a different board variant, \textit{but} at the same time
+    \item it makes the boards extensible, as classes can derive from the abstraction and implement functionality specific to them. Since we are deriving from the abstraction, all concrete implementors automatically gain this extended functionality.
+\end{compactitem}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{class_boards}
+    \caption{Class diagram of the \textit{::model::boards} namespace.}
+    \label{fig:boards}
+\end{figure}
+
+As Figure~\ref{fig:boards} shows, ConcreteBoard's methods are almost all virtual or abstract. Board stores an instance of ConcreteBoard, and extends the interface of it with methods required for the game. A new board can simply be implemented by inheriting from ConcreteBoard. Here there are no such classes, but Board can also be derived from, to implement additional behavior, for example some functionality specific to an extension.
+
+Since the game board as a whole is also hex shaped, the tiles do not make out a full rectangle. There are multiple solutions to storing a board, and each and every subclass of ConcreteBoard can implement their own. \\
+For TharsisConcreteBoard, I choose the 2D array implementation shown on Figure~\ref{fig:board_memory}. I made this decision because indexing is easy and fast compared to other solutions and the elements don't move, they stay in memory for a full game, so after the initial allocation only fields of the elements are modified. This also means that the unused memory is negligible.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{board_memory}
+    \caption{Example of memory layout when storing a board in a 2D array.}
+    \label{fig:board_memory}
+\end{figure}
+
+\subsubsection*{Iterators}
+
+Notice the \textit{begin} and \textit{end} methods in the class diagram on Figure~\ref{fig:boards}. It was a requirement that boards could be iterated over. However, there were multiple obstacles I needed to overcome during the design and implementation of a universally usable iterator.
+
+Since there could be any number of different board implementations, each one could potentially have a fundamentally different iterator. This sparked the interest to make an abstract Iterator base class, and derive iterators for every ConcreteBoard implementation.
+
+But having Iterator as a base class meant that \textit{begin} and \textit{end} cannot simply return an Iterator instance because of object slicing\footnote{The derived class needs more memory than its parent class.}. The problem is, returning a pointer to an Iterator created by \verb|new| does not sound good either: nobody expects a pointer when they call \textit{begin} on a container and no one expects that they need to call delete on it. This would just be bad design. Furthermore, it would be a pointer: the semantics for using the iterator would be different, and you could not even use it for a range-based for loop.
+
+My solution: I created a child class of Iterator called IteratorWrapper. It has a constructor that takes an Iterator pointer - any one of our concrete iterators - automatically deletes it when IteratorWrapper goes out of scope, and delegates every operation to the Iterator it is holding.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{class_iterators}
+    \caption{Class diagram of the iterators.}
+    \label{fig:iterators}
+\end{figure}
+
+There are advantages and disadvantages of subclassing IteratorWrapper from Iterator. On one hand, it enforces any change in the Iterator interface to be updated in IteratorWrapper. On the other hand, someone may accidentally assign an instance of IteratorWrapper to an Iterator variable, and object slicing happens. However, this has a really low probability, as these classes are enclosed in the ConcreteBoard class.
+
+\subsubsection{Decks and cards}

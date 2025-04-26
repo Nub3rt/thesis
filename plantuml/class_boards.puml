@@ -1,0 +1,143 @@
+@startuml class_boards
+
+skinparam classAttributeIconSize 0
+
+package ::model::boards {
+    enum TileType {
+            NONE
+
+            EMPTY
+            RESERVED_FOR_OCEAN
+            RESERVED_FOR_NOCTIS
+            EMPTY_MIN = EMPTY
+            EMPTY_MAX = RESERVED_FOR_NOCTIS
+
+            OCEAN
+            GREENERY
+            CITY
+            PLACED_MIN = OCEAN
+            PLACED_MAX = CITY
+    }
+
+    hide TileType methods
+
+    class Board {
+        - _concrete_board : ConcreteBoard*
+
+        + Board( ConcreteBoard* )
+        + ~Board()
+
+        + get_tile( int q, int r ) : Tile&
+
+        + GetNeighbouringTiles( int q, int r )
+        + GetNeighbouringTilesOfType( int q, int r )
+        + GetNeighbouringTilesOfTypeRange( int q, int r )
+        + GetTilesOfType( int q, int r )
+        + GetPlaceableTilesOfType( int q, int r )
+        + GetEmptyTiles( int q, int r )
+        + GetValidOceanTiles( int q, int r )
+        + GetValidGreeneryTiles( int q, int r )
+        + GetValidCityTiles( int q, int r )
+        + GetValidNoctisCityTiles( int q, int r )
+        + GetValidLonelyCityTiles( int q, int r )
+        + GetValidUrbanizedAreaTiles( int q, int r )
+
+        + PlaceTile( int q, int r, Player*, TileType )
+        + SetOwner( int q, int r, Player* )
+        + SetTileType( int q, int r, TileType )
+
+        + CalculateBoardVPs( Player* ) : int
+
+        + begin() : IteratorWrapper
+        + end() : IteratorWrapper
+    }
+
+    class ConcreteBoard {
+        # _on_tile_placed : Event<int, int, Tile&>
+
+        # ConcreteBoard();
+        + ~ConcreteBoard();
+
+        + get_tile( int q, int r ) : Tile& {abstract}
+        
+        + GetNeighbouringTiles( int q, int r ) {abstract}
+        + GetNeighbouringTilesOfType( int q, int r )
+        + GetNeighbouringTilesOfTypeRange( int q, int r )
+        + NoctisCityIndex() : std::pair<int, int>*
+
+        + PlaceTile( int q, int r, Player*, TileType ) {abstract}
+        + SetOwner( int q, int r, Player* ) {abstract}
+        + SetTileType( int q, int r, TileType ) {abstract}
+
+        + SetOnTilePlacedCallback( callback )
+
+        + begin() : IteratorWrapper {abstract}
+        + end() : IteratorWrapper {abstract}
+    }
+
+    class TharsisConcreteBoard {
+        # _board : std::array<std::array<Tile, 9>, 9>
+
+        # _noctis_city_index : std::pair<int, int> {static}
+
+        + TharsisConcreteBoard();
+        + ~TharsisConcreteBoard();
+
+        + get_tile( int q, int r ) : Tile&
+
+        + GetNeighbouringTiles( int q, int r )
+
+        + NoctisCityIndex() : std::pair<int, int>*
+
+        + PlaceTile( int q, int r, Player*, TileType )
+        + SetOwner( int q, int r, Player* )
+        + SetTileType( int q, int r, TileType )
+
+        + begin() : IteratorWrapper
+        + end() : IteratorWrapper
+
+        # get_starting_board() {static}
+    }
+
+    class Tile {
+        - _q : int
+        - _r : int
+        - _type TileType
+        - _owner Player*
+        - _bonus_1 std::optional<Resource>
+        - _bonus_2 std::optional<Resource>
+
+        + Tile( int q, int r, TileType = NONE )
+        + Tile( int q, int r, TileType, Resource )
+        + Tile( int q, int r, TileType, Resource, Resource )
+
+        + get_type() : TileType
+        + set_type( TileType )
+        + get_owner() : Player*
+        + set_owner( Player* )
+        + get_indices() std::pair<int, int>
+        + get_bonus_1() : std::optional<Resource>
+        + get_bonus_2() : std::optional<Resource>
+
+        + IsEmpty() : bool
+        + ApplyPlacementBonuses( Player* )
+    }
+
+    Board *- ConcreteBoard
+    ConcreteBoard <|-- TharsisConcreteBoard
+    Tile -o TharsisConcreteBoard
+    Board --> Tile
+    ConcreteBoard --> Tile
+
+    TileType -[hidden] Tile
+
+    note left of Board::GetNeighbouringTiles
+        All methods starting
+        with Get return an
+        std::vector<
+          std::pair<int, int>
+        >.
+    end note
+}
+
+@enduml

@@ -1,0 +1,47 @@
+@startuml usecase_actions
+
+left to right direction
+
+rectangle "Action state" {
+    usecase "Play card" as play
+    usecase "Use action" as action
+    usecase sp_convert as "Use standard project
+Convert resources"
+    usecase "Enter sell state" as goto_sell
+}
+
+action <. play : <<precedes>>
+sp_convert -[hidden]> action
+goto_sell -[hidden]> sp_convert
+
+
+usecase "  " as choke
+
+usecase "Raise temperature" as temperature
+usecase "Place ocean" as ocean
+usecase "Raise oxygen" as oxygen
+usecase "Raise terraform rating" as tr
+usecase "Place greenery" as greenery
+usecase "Place city" as city
+
+temperature ..> tr : <<includes>>
+ocean ..> tr : <<includes>>
+oxygen ..> tr : <<includes>>
+
+temperature -[hidden]> ocean
+ocean -[hidden]> oxygen
+
+oxygen <. greenery : <<extend>> 
+
+play ..> choke
+action ..> choke
+sp_convert ..> choke
+
+choke ..> temperature : <<extend>>
+choke ..> ocean : <<extend>>
+choke ..> oxygen : <<extend>>
+choke ..> tr : <<extend>>
+choke ..> greenery : <<extend>>
+choke ..> city : <<extend>>
+
+@enduml

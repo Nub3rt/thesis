@@ -1,0 +1,52 @@
+@startuml usecase_game
+
+left to right direction
+
+actor User as user
+
+(Return to menu screen) <- user
+
+rectangle "Action state" {
+    usecase "Play card" as play
+    usecase "Use action" as action
+    usecase sp_convert as "Use standard project
+Convert resources"
+    usecase "Enter sell state" as goto_sell
+}
+
+user --> play
+user --> action
+user --> sp_convert
+user --> goto_sell
+
+play .> action : <<precedes>>
+
+rectangle "Sell state" {
+    usecase "Sell card" as sell
+    usecase "Exit state" as exit_sell
+}
+
+sell <-- user
+exit_sell <-- user
+
+rectangle "Payment confirmation state" {
+    usecase "Confirm payment" as payment
+}
+
+payment <-- user
+
+rectangle "Placement confirmation state" {
+    usecase "Confirm placement" as placement
+}
+
+placement <-- user
+
+rectangle "Research state" {
+    usecase "Toggle card to buy" as toggle
+    usecase "Confirm" as confirm
+}
+
+user --> toggle
+user --> confirm
+
+@enduml

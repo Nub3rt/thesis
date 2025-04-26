@@ -1,0 +1,10 @@
+@startuml package
+
+main.cpp - [App]
+[View]
+[Model]
+
+App -> View
+View --> Model
+
+@enduml

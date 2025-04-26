@@ -1,0 +1,18 @@
+@startuml usecase_menu
+
+actor User as user
+
+usecase "Start new game" as new_game
+usecase "Quit the application" as quit
+usecase "Continue ongoing game" as continue
+
+user -up-> new_game
+user -> quit
+user -> continue
+
+new_game -[hidden]-> quit
+quit -[hidden]-> continue
+
+new_game ..> continue : <<precedes>>
+
+@enduml
