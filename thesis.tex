@@ -7,6 +7,13 @@
 	%final, % Set final to hide todos
 ]{elteikthesis}[2024/04/26]
 
+\makeatletter
+\@addtoreset{section}{part} % Reset section numbering per part
+\renewcommand{\thesection}{\arabic{section}} % Sections are 1, 2, 3...
+\makeatother
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+
 % The minted package is also supported for source highlighting
 % See elteikthesis_minted.tex for example
 % \usepackage[newfloat]{minted}
