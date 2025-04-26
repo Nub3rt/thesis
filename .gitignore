@@ -2,9 +2,8 @@
 .vscode/
 example/
 test/
+plantuml/*.png
 
-# PlantUML files
-*-plantuml.*
 
 # Downloaded from the link below
 

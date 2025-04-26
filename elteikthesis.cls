@@ -222,7 +222,7 @@
 % Priority order of image extensions
 \DeclareGraphicsExtensions{.pdf,.eps,.png,.jpg}
 % Default image path
-\graphicspath{{./images/}}
+\graphicspath{{./images/},{./plantuml/}}
 % Set name for List of Figures
 \renewcommand{\listfigurename}{\lstfigurelabel}
 % ------------------------------
