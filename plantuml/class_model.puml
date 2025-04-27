@@ -1,0 +1,93 @@
+@startuml class_model
+
+skinparam classAttributeIconSize 0
+
+hide enum methods
+
+package ::model {
+    enum Tag {
+        BUILDING
+        SPACE
+        POWER
+        SCIENCE
+        JOVIAN
+        EARTH
+        PLANT
+        MICROBE
+        ANIMAL
+        CITY
+        EVENT
+        MAX = EVENT
+    }
+
+    enum Resource {
+        CREDIT
+        STEEL
+        TITANIUM
+        PLANTS
+        ENERGY
+        HEAT
+        MAX = HEAT
+
+        CARD
+    }
+
+    class Event<Args...> {
+        - _callback : Args... => void
+
+        + SetCallback( callback )
+        + ClearCallback()
+
+        + Invoke( Args... )
+    }
+
+    class Player {
+        - _tr : int { get }
+
+        - _tags
+        - _resources { get }
+        - _resource_productions { get }
+
+        - _hand { get }
+        - _event_cards { get }
+        - _automated_cards { get }
+        - _active_cards
+        - _action_cards { get }
+        - _effect_cards { get }
+
+        - _steel_value { get }
+        - _titanium_value { get }
+
+        - _greenery_cost { get }
+        - _temperature_cost { get }
+
+        - Events ...
+
+        + Player( int starting_tr, int starting_r_p )
+        + ~Player()
+
+        + GetResource( Resource ) : int
+        + GetResourceProduction( Resource ) : int
+        + DrawCard(), RaiseTR( int ), ...
+        + GainTR( int )
+        + GainResource(), LoseResource(), ...
+        + PerformProductionPhase()
+        + GetTagCount( Tag ) : int
+        + GetMaxPayAmountForX() : int
+        + ConfirmXPayment( int, callback )
+        + ActionStatus( Card* ) : Availability
+        + UseAction( Card* )
+        + OnEfect( callback )
+        + CalculateCardVPs() : int
+        + Event setters() ...
+
+        +PerformProductionPhase()
+
+        - DoPlayCard( Card* )
+    }
+
+    Player -> Event
+
+}
+
+@enduml

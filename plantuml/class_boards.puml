@@ -2,6 +2,8 @@
 
 skinparam classAttributeIconSize 0
 
+hide enum methods
+
 package ::model::boards {
     enum TileType {
             NONE
@@ -18,8 +20,6 @@ package ::model::boards {
             PLACED_MIN = OCEAN
             PLACED_MAX = CITY
     }
-
-    hide TileType methods
 
     class Board {
         - _concrete_board : ConcreteBoard*
@@ -52,7 +52,7 @@ package ::model::boards {
         + end() : IteratorWrapper
     }
 
-    class ConcreteBoard {
+    abstract class ConcreteBoard {
         # _on_tile_placed : Event<int, int, Tile&>
 
         # ConcreteBoard();
@@ -126,8 +126,8 @@ package ::model::boards {
     Board *- ConcreteBoard
     ConcreteBoard <|-- TharsisConcreteBoard
     Tile -o TharsisConcreteBoard
-    Board --> Tile
-    ConcreteBoard --> Tile
+    Board ..> Tile
+    ConcreteBoard ..> Tile
 
     TileType -[hidden] Tile
 

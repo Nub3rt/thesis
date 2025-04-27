@@ -9,7 +9,7 @@ I developed the application on a laptop with \textbf{Windows 11}. I used Microso
 
 \subsection{Utilized libraries}
 
-The following libraries and versions have been used for the application. Use this command to install the required dependencies using vcpkg: \verb|.\vcpkg install sdl3 sdl3-image[jpeg,png] glew glm imgui[opengl3-binding,sdl3-binding] freetype --triplet x64-windows|
+The following libraries and versions have been used for the application. Use this command to install the required dependencies using vcpkg: \texttt{.\textbackslash vcpkg install sdl3 sdl3-image[jpeg,png] glew glm imgui[opengl3-binding,sdl3-binding] freetype --triplet x64-windows}
 
 \begin{itemize}
     \item \textbf{OpenGL:} (Apache License 2.0) - graphics rendering library.
@@ -39,7 +39,7 @@ The player should be able to start a new game and exit the application. Furtherm
     \centering
     \includegraphics[width=0.5\textwidth]{usecase_menu}
     \caption{Use case diagram of the menu screen.}
-    \label{fig:usecase:menu}
+    \label{fig:usecase_menu}
 \end{figure}
 
 \subsubsection*{Game}
@@ -50,7 +50,7 @@ The player should always have the option to leave the game. Available use cases 
     \centering
     \includegraphics[width=1.0\textwidth]{usecase_game}
     \caption{Use case diagram of the game screen.}
-    \label{fig:usecase:game}
+    \label{fig:usecase_game}
 \end{figure}
 
 Increasing a global parameter always increases the player's terraform rating.
@@ -59,7 +59,7 @@ Increasing a global parameter always increases the player's terraform rating.
     \centering
     \includegraphics[width=1.0\textwidth]{usecase_actions}
     \caption{Detailed use cases of the Action state.}
-    \label{fig:usecase:actions}
+    \label{fig:usecase_actions}
 \end{figure}
 
 
@@ -116,6 +116,8 @@ There is some leeway though: one header file from the two can include the other 
 
 Every code in this project is under the namespace \textit{::model}.
 
+To avoid magic numbers in the code, I have created a \textit{constants.hpp} header file, which consists of constants defined with \verb|inline constexpr|. This can be included from any other file -even from \textit{View}.
+
 \subsubsection{The board}
 
 The \textit{::model::boards} namespace contains the part of the code that implements the game board. Mars is made up of hexes, and to be more specific, the hexes have pointy-top orientation. Storing tables made up of hexes is not trivial, and there are multiple ways to implement it.
@@ -152,10 +154,10 @@ To implement different boards in the application, I have decided to use the \tex
     \centering
     \includegraphics[width=1.0\textwidth]{class_boards}
     \caption{Class diagram of the \textit{::model::boards} namespace.}
-    \label{fig:boards}
+    \label{fig:class_boards}
 \end{figure}
 
-As Figure~\ref{fig:boards} shows, ConcreteBoard's methods are almost all virtual or abstract. Board stores an instance of ConcreteBoard, and extends the interface of it with methods required for the game. A new board can simply be implemented by inheriting from ConcreteBoard. Here there are no such classes, but Board can also be derived from, to implement additional behavior, for example some functionality specific to an extension.
+As Figure~\ref{fig:class_boards} shows, ConcreteBoard's methods are almost all virtual or abstract. Board stores an instance of ConcreteBoard, and extends the interface of it with methods required for the game. A new board can simply be implemented by inheriting from ConcreteBoard. Here there are no such classes, but Board can also be derived from, to implement additional behavior, for example some functionality specific to an extension.
 
 Since the game board as a whole is also hex shaped, the tiles do not make out a full rectangle. There are multiple solutions to storing a board, and each and every subclass of ConcreteBoard can implement their own. \\
 For TharsisConcreteBoard, I choose the 2D array implementation shown on Figure~\ref{fig:board_memory}. I made this decision because indexing is easy and fast compared to other solutions and the elements don't move, they stay in memory for a full game, so after the initial allocation only fields of the elements are modified. This also means that the unused memory is negligible.
@@ -169,7 +171,7 @@ For TharsisConcreteBoard, I choose the 2D array implementation shown on Figure~\
 
 \subsubsection*{Iterators}
 
-Notice the \textit{begin} and \textit{end} methods in the class diagram on Figure~\ref{fig:boards}. It was a requirement that boards could be iterated over. However, there were multiple obstacles I needed to overcome during the design and implementation of a universally usable iterator.
+Notice the \textit{begin} and \textit{end} methods in the class diagram on Figure~\ref{fig:class_boards}. It was a requirement that boards could be iterated over. However, there were multiple obstacles I needed to overcome during the design and implementation of a universally usable iterator.
 
 Since there could be any number of different board implementations, each one could potentially have a fundamentally different iterator. This sparked the interest to make an abstract Iterator base class, and derive iterators for every ConcreteBoard implementation.
 
@@ -181,9 +183,158 @@ My solution: I created a child class of Iterator called IteratorWrapper. It has 
     \centering
     \includegraphics[width=1.0\textwidth]{class_iterators}
     \caption{Class diagram of the iterators.}
-    \label{fig:iterators}
+    \label{fig:class_iterators}
 \end{figure}
 
 There are advantages and disadvantages of subclassing IteratorWrapper from Iterator. On one hand, it enforces any change in the Iterator interface to be updated in IteratorWrapper. On the other hand, someone may accidentally assign an instance of IteratorWrapper to an Iterator variable, and object slicing happens. However, this has a really low probability, as these classes are enclosed in the ConcreteBoard class.
 
 \subsubsection{Decks and cards}
+
+The \textit{::model::decks} namespace contains classes implementing project cards, different sets of cards, and a Deck class. 
+
+In the board game, each card has a unique name, and an ID by design. I imported these into the implementation, creating an enumerated type, CardID, where identifiers bear the name of the card, and have their values set to their respective ID.
+
+\subsubsection*{Cards}
+
+The game features three types of cards:
+
+\begin{compactitem}
+    \item \textbf{Event cards} (orange) only have effects when they are played, and after that they are turned face down. Their tags do not get counted for requirements. Victory points still count at the end of the game.
+    \item \textbf{Automated cards} (green) also only have effects when they are played, but they stay face up and their tags are in effect for the rest of the game.
+    \item \textbf{Active card} (blue) are similar to automated cards, but they either have an \textit{effect} or an \textit{action}.
+    \begin{compactitem}
+        \item \textit{Effect cards} have ongoing effects, that trigger automatically on specific events (e.g. when the player places a city they gain some resources, or all cards cost one less).
+        \item \textit{Action cards} have an action, that the player can choose to perform once each generation. They may have a cost needed to perform said action.\\
+        There can be multiple different actions on one card. In this case, only one of them can be used in each generation.
+    \end{compactitem}
+\end{compactitem}
+
+Action cards have an associated enumerated type Availability, which represents their state:
+\begin{compactitem}
+    \item usable
+    \item not usable
+    \item used this generation
+\end{compactitem}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{class_cards}
+    \caption{Class diagram of the cards.}
+    \label{fig:class_cards}
+\end{figure}
+
+The tag system is implemented in the Card parent class. The private \textit{_tags} member holds this information, and derived concrete classes should utilize The \texttt{AddTag} protected method in their constructors to configure the correct amount of tags.
+
+The \textit{template method design pattern} is used a lot in these classes. Card's other protected methods are all virtual, and they are used by the methods listed in the next paragraphs.
+
+A card has some kind of state and state-dependent logic. These are the three states cards can have:
+\begin{compactitem}
+    \item The card is in the deck if $\_holder = nullptr \land \_owner = nullptr$
+    \item The card is in the player's hand if $\_holder \neq nullptr \land \_owner = nullptr$
+    \item The card was played by the player if $\_holder \neq nullptr \land \_owner \neq nullptr$
+\end{compactitem}
+The following methods have state-specific behaviour: \texttt{Buy}, \texttt{Sell}, \texttt{GetCost}, \texttt{CanBePlayed}, \texttt{Play} and \texttt{CountVPs}. \texttt{Buy} just sets \textit{\_holder} to the received parameter, and \texttt{Sell} sets it back to \textit{null}. This means that the credits received or paid have to be handled elsewhere. \texttt{GetCost} requires a holder as this calculates the cost with cost reductions from the holder's effect cards. \texttt{CanBePlayed} also requires a holder, and uses the virtual \texttt{SatisfiesRequirements} method. \texttt{CountVPs} requires an owner, as only then can victory points be awarded.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{state_card}
+    \caption{State diagram of the Card class.}
+    \label{fig:state_cards}
+\end{figure}
+
+Playing a card is a more complicated process. The Player class holding the Card instance in its hand has a \texttt{PlayCard} method, which handles most of the logic. Resources cannot be deducted in the Card class, since the Player might pay with Steel or Titanium resources if the card is of Building or Space type. In this case, \texttt{DoPlayCard} gets passed as a function pointer to be called after payment confirmation.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{sequence_playcard}
+    \caption{Sequence diagram of a card being played.}
+    \label{fig:sequence_playcard}
+\end{figure}
+
+The concrete cards are contained in the \textit{::model::decks::cards} namespace as to not pollute the \textit{::model::decks} namespace. Adding a new card can simply be done by creating a new class, inheriting from one of the four types of cards (EventCard, AutomatedCard, ActiveCardWithEffect, ActiveCardWithAction), calling the parent constructor with the appropriate parameters, calling \texttt{AddTag} in it for all the card's tags and overriding the appropriate methods. In the \textit{::model::decks::cards} namespace there is a header file located which includes all the cards. This way, when dealing with the concrete card classes one does not have to include them separately by hand.
+
+\subsubsection*{Deck and DeckProviders}
+
+In the course of the game, players can draw cards from a pile of cards - the deck - and sell - discard - cards they decide to. To enable multiple card sets for the game, I created a DeckProvider abstract class, which has one method, \texttt{GenerateDeck}, which returns a freshly created list of cards. This method has to be overridden in derived classes, returning a different set of cards for each subclass. These classes can even implement the \textit{singleton design pattern}.
+
+An instance of the DeckProvider class can be injected into the Deck class. Deck initializes itself with the cards that \texttt{GenerateDeck} returns, shuffling them. Cards can be drawn from Deck, and discarded cards get stored in another member. When the deck is empty at card draw, discarded cards get shuffled and put back into the deck.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{class_decks}
+    \caption{Class diagram of the decks.}
+    \label{fig:class_decks}
+\end{figure}
+
+\subsubsection{The GameModel}
+
+This section contains classes directly in the namespace \textit{::model}. There are two enumerated values: Tag and Resource.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{class_model}
+    \caption{Class diagram of utilities in \textit{::model}.}
+    \label{fig:class_model}
+\end{figure}
+
+\subsubsection*{Event}
+
+The model contains an Event class for event-driven programming. The board, the Player and the GameModel classes all feature events. However, this Event class is not really an event. It only stores one function, so at any time a maximum of one function can be subscribed to the event.
+
+\subsubsection*{Player}
+
+The player class stores data about a player. Resources, resource productions are stored in an array indexed by the target resource's underlying enumerated value. There are lots of events to make the program centralized: every time a player gains or does something, it comes in here. Methods usually have two kinds: the first invokes an event, notifying the GameModel about the requested change, and the latter one confirms and actually carries out the change (e.g. \texttt{RaiseTR} invokes an event, and \texttt{GainTR} modifies the \textit{\_tr} member in Player). There are also methods for handling card ownership and play.
+
+\subsubsection*{Core Model}
+
+The game leans heavily toward a state-centric architecture. The model was designed with this in mind from the start, and I am using the \textit{state design pattern}. As before, it is still important to make a construct that allows new game modes and variants to be implemented easily and following the SOLID design principles. I identified the following states during planning:
+
+\begin{itemize}
+    \item \textbf{Research state:} Corresponds to the research phase in the game. The player receives four cards, and can buy as many of them as they want, each costing 3 Credits.
+    \item \textbf{Idle state:} Corresponds to the action phase in the game. The player can play cards, sell cards, use actions, use standard project, convert resources and end their turn.
+    \item \textbf{Placement confirmation state:} Occurs whenever the player is placing a tile. A position is required for placing the tile, except when the card \textit{Noctis City} is played and the game board has a reserved tile for it. In this case the city gets placed automatically.
+    \item \textbf{Payment confirmation state:} Occurs whenever the player chooses to perform an action that requires payment that can be paid for by Steel or Titanium resources (card playing, specific actions on cards) and he has at least one of the correct resource type. If they have at least one resource, this state will occur even if they can only afford the payment by spending all their Credits and resources, to give feedback to the player about the fact they are spending their resources.
+    \item \textbf{Post last generation state:} After the last generation, players have the option to convert their Plant resources to greeneries as normal. This is the only action they can perform here. Placement bonuses still trigger. After this phase, the game is over.
+    \item \textbf{Post last generation placement confirmation state:} Placing greeneries in post last generation state transition into this state for clarity instead of the normal placement confirmation state.
+    \item \textbf{Game over state:} After the greenery converting phase, the game goes to this state. No actions are available here.
+\end{itemize}
+
+GameModel is an abstract class, that implements most of the features required for a usual game of Terraforming Mars. The base states inheriting from GameModelState were written for this abstract GameModel, which has virtual \texttt{CreateStateVariant} methods. Whenever a state change is about to happen and a new state instance has to be created, they get constructed through these methods. Different game variants can then inherit from GameModel, and if they need they can also create specialized state classes inheriting from the different GameModelState classes (or even from GameModelState itself). If they do, they need to override the appropriate \texttt{CreateStateVariant} method so that the model can create the correct state instance for the variant.
+
+Let's go over this with the solo variant. SoloGameModel inherits from GameModel, and overrides some methods: the abstract \texttt{CreatePlayer} method, since starting terraform rating and resource productions varies between gamemodes. Turn ending logic is also different in solo games, so I created SoloIdleState and SoloPostLastGeneration, both inheriting from their respective parent classes.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{class_gamemodel}
+    \caption{Approximate class diagram of the game model.}
+    \label{fig:class_gamemodel}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{state_sologamemodel}
+    \caption{State diagram of the solo variant of the game.}
+    \label{fig:state_sologamemodel}
+\end{figure}
+
+Because only one tile can be placed at a time, but one action can result in multiple tile placements, there has to be some sort of mechanism that allows this behavior. For this, I created a Request base class in GameModel, and queue that stores pending request. In the idle state, if there is a request, it gets performed. In placement and payment confirmation state, after confirmation was received and there are requests, instead of going back to the idle state, the next request gets performed.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{class_requests}
+    \caption{Class diagram of the requests.}
+    \label{fig:class_requests}
+\end{figure}
+
+For performing the next request, I use the \textit{visitor design pattern}. After popping the next request from the queue, the abstract method \texttt{Perform} gets called, in which every subclass calls the state's \texttt{PerformRequest} overloaded method with \textit{this} as argument.
+
+There is a flaw in this design: you cannot directly change the state from a state method, as it can result in dangling references in the call stack. This cannot be solved with std::shared\_ptr, as its reference counter does not increase on method calls on the held object.
+
+To solve this, I created the \texttt{RequestStateChange} method, which sets \textit{\_next\_state} to the parameter, and created an \texttt{Update} method which sets the state to the new one. This means that the model has an update method that has to be called frequently, in a render loop probably, which is far from optimal. Resolving this issue is important in the future. \todo{ezt már nem tudtam itt értelmesen megfogalmazni}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{sequence_placetile}
+    \caption{Sequence diagram of an example for a tile placement.}
+    \label{fig:sequence_placetile}
+\end{figure}

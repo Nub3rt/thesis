@@ -1,0 +1,44 @@
+@startuml class_requests
+
+skinparam classAttributeIconSize 0
+
+package ::model {
+    package GameModel <<Node>> {
+        abstract class Request {
+            # Request()
+            + ~Request()
+
+            Perform( GameModelState* ) {abstract}
+        }
+
+        class PlacementRequest extends Request {
+            + type : TileType
+            + get_valid_positions : callback
+
+            + PlacementRequest( ... )
+            
+            + Perform( GameModelState* )
+        }
+
+        class PaymentRequest extends Request {
+            + cost : int
+            + resource : Resource
+            + resource_value : int
+            + after_payment : callback
+
+            + PaymentRequest( ... )
+            
+            + Perform( GameModelState* )
+        }
+
+        class PostLastGenerationGreeneryPlacementRequest extends Request {
+            + get_valid_positions : callback
+
+            + PostLastGenerationGreeneryPlacementRequest( ... )
+            
+            + Perform( GameModelState* )
+        }
+    }
+}
+
+@enduml

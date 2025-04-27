@@ -1,0 +1,34 @@
+@startuml sequence_playcard
+
+skinparam style strictuml
+
+actor User as user
+participant GameModel as model
+participant GameModelState as state
+participant Player as player
+participant Card as card
+
+note over state : IdleState
+/ note over card : In hand
+
+user ++ #Lavender
+
+user -> model ++ #Lavender : PlayCard()
+model -> state ++ #Lavender : PlayCard()
+state -> player ++ #Lavender : PlayCard()
+player -> player : find card
+player -> card ++ #Lavender : CanBePlayed()
+return 
+player -> player : LoseResource()
+player -> player ++ #LightSkyBlue : DoPlayCard()
+player -> player : ...
+player -> card ++ #Lavender : Play()
+card -> card : ApplyImmediateEffects()
+
+return
+return
+return
+return
+return
+
+@enduml

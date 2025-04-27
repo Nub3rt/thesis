@@ -1,0 +1,187 @@
+@startuml class_gamemodel
+
+skinparam classAttributeIconSize 0
+
+package ::model {
+    abstract class GameModel {
+        # _generation : int { get }
+        # _temperature : int { get }
+        # _ocean_count : int { get }
+        # _oxygen_level : int { get }
+
+        # _state : GameModelState*
+        # _next_state : GameModelState*
+
+        # _local_player : Player* { get }
+        # _board : Board*
+        # _deck : Deck*
+        # _random : std::mt19937
+        # _queued_request : std::queue<Request*>
+        # Events ...
+
+        # GameModel( int seed )
+        + ~GameModel()
+
+        + Init( Board*, Deck* )
+        + Start()
+        + Update()
+
+        + CanUseX(), UseX(), ...
+        + PlayCard( Card* )
+        + ActionStatus( Card* ) : Availability
+        + UseAction( Card*)
+        + CanEndTurn() : bool
+        + EndTurn()
+        + GetLocalPlayerVPs() : int
+        + Event setters() ...
+
+        + ToggleToBuyCard( int )
+        + GetTotalCost() : int
+        + ConfirmPurchases()
+
+        + TilePlacementConfirmed( int q, int r )
+
+        + PaymentConfirmed( int credit, int resource )
+
+        # CreatePlayer() : Player* {abstract}
+
+        # CreateXState() : XState*
+        # RequestStateChange( GameModelState* )
+
+        # Event handlers() ...
+    }
+
+    abstract class GameModelState {
+        # _model : GameModel&
+
+        # GameModelState( GameModel& )
+        + ~GameModelState()
+
+        + InIdleState(), InPostLastGenerationState()
+        + CanUseX(), UseX(), ...
+        + PlayCard( Card* )
+        + ToggleToBuyCard( int )
+        + GetTotalCost() : int
+        + ConfirmPurchases()
+        + TilePlacementConfirmed( int q, int r )
+        + PaymentConfirmed( int credit, int resource )
+        + CanEndTurn() : bool
+        + EndTurn()
+        + PerformRequest( XRequest* )
+        + Event handlers() ...
+        # DoOnPlacementConfirmation( TileType, get_valid_positions)
+    }
+
+    class ResearchState extends GameModelState {
+        # _completed : bool
+        # _cards : std::array<Card*, 4>
+        # _to_buy : std::array<bool, 4>
+
+        + ResearchState( GameModel& )
+        + ~ResearchState()
+
+        + ToggleToBuyCard( int )
+        + GetTotalCost() : int
+        + ConfirmPurchases()
+    }
+
+    class IdleState extends GameModelState {
+        + IdleState( GameModel& )
+        + ~IdleState()
+        
+        + InIdleState()
+        + CanUseX(), UseX(), ...
+        + PlayCard( Card* )
+        + CanEndTurn() : bool
+        + EndTurn()
+    }
+
+    class PlacementConfirmationState extends GameModelState {
+        # _request : PlacementRequest*
+        + valid_positions : std::vector<std::pair<int, int>>
+
+        + PlacementConfirmationState( GameModel&, PlacementRequest* )
+        + ~PlacementConfirmationState()
+
+        + TilePlacementConfirmed( int q, int r )
+    }
+
+    class PaymentConfirmationState extends GameModelState {
+        # _request : PaymentRequest*
+
+        + PaymentConfirmationState( GameModel&, PaymentRequest* )
+        + ~PaymentConfirmationState()
+
+        + TilePaymentConfirmed( int q, int r )
+    }
+
+    class PostLastGenerationState extends GameModelState {
+        + PostLastGenerationState( GameModel& )
+        + ~PostLastGenerationState()
+
+        + InPostLastGenerationState() : bool
+        + CanConvertPlantsToGreenery() : bool
+        + ConvertPlantsToGreenery()
+        + CanEndTurn() : bool
+        + EndTurn()
+    }
+
+    class PLGPlacementCState extends GameModelState {
+        # _request : PLGGPlacementRequest*
+        
+        + PLGPlacementCState( GameModel&, PLGGPlacementRequest* )
+        + ~PLGPlacementCState()
+
+        + InPostLastGenerationState() : bool
+        + TilePlacementConfirmed( int q, int r )
+    }
+
+    class GameOverState extends GameModelState {
+        + GameOverState( GameModel& model )
+        + ~GameOverState()
+    }
+
+
+    class SoloGameModel extends GameModel {
+        + SoloGameModel( int seed )
+        + ~SoloGameModel()
+
+        + Init( Board*, Deck* )
+        + Start()
+
+        # CreatePlayer() : Player*
+
+        # CreateIdleState() : IdleState*
+        # CreatePostLastGenerationState() : PostLastGenerationState*
+    }
+
+    class SoloIdleState extends IdleState {
+        + SoloIdleState( GameModel& )
+        + ~SoloIdleState()
+
+        + EndTurn()
+    }
+
+    class SoloPostLastGenerationState extends PostLastGenerationState {
+        + SoloPostLastGenerationState( GameModel& )
+        + ~SoloPostLastGenerationState()
+
+        + EndTurn()
+    }
+
+
+    GameModel <-> GameModelState
+
+
+    ResearchState -[hidden] PlacementConfirmationState
+    ResearchState -[hidden] PaymentConfirmationState
+    ResearchState -[hidden]- IdleState
+    IdleState -[hidden] PostLastGenerationState
+    IdleState -[hidden] PLGPlacementCState
+    IdleState -[hidden] GameOverState
+
+    SoloPostLastGenerationState <-- SoloGameModel
+    SoloIdleState <-- SoloGameModel
+}
+
+@enduml

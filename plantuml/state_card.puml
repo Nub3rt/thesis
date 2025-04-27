@@ -1,0 +1,25 @@
+@startuml state_card
+
+state "In deck" as deck
+deck : ""_holder == nullptr &&""
+deck : ""_owner == nullptr""
+
+state "In hand" as hand
+hand : ""_holder != nullptr &&""
+hand : ""_owner == nullptr""
+hand : GetCost()
+hand : CanBePlayed()
+
+state "Played" as played
+played : ""_holder != nullptr &&""
+played : ""_owner != nullptr""
+played : CountVPs()
+
+[*] -> deck
+
+deck -> hand : Buy( Player* )
+deck <- hand : Sell()
+
+hand -> played : Play()
+
+@enduml

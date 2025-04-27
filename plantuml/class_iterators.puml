@@ -4,7 +4,7 @@ skinparam classAttributeIconSize 0
 
 package ::model::boards {
     package ConcreteBoard <<Node>> {
-        class Iterator{
+        interface Iterator {
             + Iterator()
             + ~Iterator()
 
@@ -17,7 +17,7 @@ package ::model::boards {
             + operator!=( Iterator& ) : bool {abstract}
         }
 
-        class IteratorWrapper{
+        class IteratorWrapper {
             - _iterator : Iterator*
 
             + IteratorWrapper()

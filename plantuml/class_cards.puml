@@ -1,0 +1,101 @@
+@startuml class_cards
+
+skinparam classAttributeIconSize 0
+
+hide enum methods
+
+package ::model::decks {
+    abstract class Card {
+        - _tags : std::array<int, Tag::MAX + 1>
+
+        # _card_id : CardID
+        # _base_cost : int
+
+        # _model : GameModel&
+
+        # _holder : Player*
+        # _owner : Player*
+
+        # Card( GameModel&, CardID, int base_cost )
+        + ~Card()
+
+        + get_card_id() : CardID
+        + get_base_cost() : int
+
+        + HasTag( Tag ) : bool
+        + GetTagCount( Tag ) : int
+
+        + Buy( Player* )
+        + Sell()
+        + GetCost() : int
+        + CanBePlayed() : bool
+        + Play()
+        + CountVPs() : int
+
+        # AddTag( Tag )
+
+        # SatisfiesRequirements() : bool
+        # ApplyImmediateEffects()
+        # DoCountVPs() : int
+    }
+
+    abstract class EventCard extends Card {
+        # EventCard( GameModel&, CardID, int base_cost )
+        + ~EventCard()
+    }
+
+    abstract class AutomatedCard extends Card {
+        # AutomatedCard( GameModel&, CardID, int base_cost )
+        + ~AutomatedCard()
+    }
+
+    abstract class ActiveCard extends Card {
+        # ActiveCard( GameModel&, CardID, int base_cost )
+        + ~ActiveCard()
+    }
+
+    abstract class ActiveCardWithEffect extends ActiveCard {
+        # ActiveCardWithEffect( GameModel&, CardID, int base_cost )
+        + ~ActiveCardWithEffect()
+
+        + AfterAnyonePlacesCity() : void
+        + AfterAnyonePlacesOcean() : void
+        + AfterYouPlaySpaceEvent() : void
+        + ModifyCardCost( const Card* card, int cost ) : int
+
+        # DoAfterAnyonePlacesCity() : void
+        # DoAfterAnyonePlacesOcean() : void
+        # DoAfterYouPlaySpaceEvent() : void
+        # DoModifyCardCost( const Card* card, int cost ) : int
+    }
+
+    abstract class ActiveCardWithAction extends ActiveCard{
+        # _used_this_generation : bool
+
+        # ActiveCardWithAction( GameModel&, CardID, int base_cost )
+        + ~ActiveCardWithAction()
+
+        + Availability() : Availability
+        + UseAction()
+        + NextGenerationStarted()
+
+        # CanBeUsed() : bool {abstract}
+        # DoUseAction() {abstract}
+    }
+
+    enum Availability {
+        USED
+        CAN_BE_USED
+        NOT_USABLE
+    }
+
+    enum CardID {
+        COLONIZER_TRAINING_CAMP = 1
+        DEEP_WELL_HEATING = 3
+        CLOUD_SEEDING = 4
+        MARTIAN_RAILS = 7
+        ...
+    }
+}
+
+@enduml

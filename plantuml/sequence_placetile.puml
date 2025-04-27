@@ -1,0 +1,86 @@
+@startuml sequence_placetile
+
+skinparam style strictuml
+
+
+actor User as user
+participant GameModel as model
+participant GameModelState as state
+participant Board as board
+participant Player as player
+participant Request as request
+
+note over state : IdleState
+
+user ++ #Lavender
+
+user -> model ++ #Lavender : UseAquiferSP()
+model -> state ++ #Lavender : UseAquiferSP()
+state -> state : CanUseAquiferSP()
+state -> player ++ #Lavender : LoseResource()
+return
+state -> player ++ #Lavender : PlaceOcean()
+player -> player : _on_place_ocean.Invoke()
+player -> model ++ #LightSkyBlue : Player_OnPlaceOcean()
+model -> state ++ #LightSkyBlue : Player_OnPlaceOcean()
+state -> state ++ #Thistle : DoOnPlacementConfirmation()
+state -> state ++ #Plum : PerformRequest()
+state -> model ++ #Thistle : CreatePlacementConfirmationState()
+return
+state -> model ++ #Thistle : RequestStateChange()
+return
+return
+return
+return
+return
+return
+return
+return
+
+...
+
+user -> model ++ #Lavender : Update()
+model -x state : delete
+|||
+model -> state : _state = _next_state
+note over state : PlacementConfirmationState
+return
+
+...
+
+user -> model ++ #Lavender : PlacementConfirmed()
+model -> state ++ #Lavender : PlacementConfirmed()
+state -> state : verify
+state -> board ++ #Lavender : PlaceTile()
+board -> board ++ #LightSkyBlue : ApplyPlacementBonuses()
+board ->? : ...
+return
+return
+state ->? : ...
+
+alt _queued_requests.empty()
+    state -> model ++ #LightSkyBlue : CreateIdleState()
+    return
+    state -> model ++ #LightSkyBlue : RequestStateChange()
+    return
+else not _queued_requests.empty()
+    state -> model ++ #LightSkyBlue : _queued_requests.pop()
+    return
+    state -> request ++ #Lavender : Perform() <i>(visitor design pattern)</i>
+    request -> state ++ #LightSkyBlue : PerformRequest( this ) <i>(visitor design pattern)</i>
+    state -> model ++ #LightSkyBlue : CreateXState()
+    return
+    state -> model ++ #LightSkyBlue : RequestStateChange()
+    return
+    return
+    return
+end
+
+return
+return
+
+...
+ 
+user -> model ++ #Lavender : Update()
+
+@enduml

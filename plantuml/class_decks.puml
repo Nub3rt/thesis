@@ -1,0 +1,36 @@
+@startuml class_decks
+
+skinparam classAttributeIconSize 0
+
+package ::model::decks {
+    class Deck {
+        - _deck : std::vector<Card*>
+        - _discard_pile : std::vector<Card*>
+
+        - _random : std::mt19973
+
+        + Deck( GameModel&, DeckProvider&, int seed )
+        + ~Deck()
+
+        + DrawCard() : Card*
+        + DiscardCard( Card* )
+    }
+
+    abstract class DeckProvider {
+        # DeckProvider()
+        + ~DeckProvider()
+
+        + GenerateDeck( GameModel& ) : std::vector<Card*> {abstract}
+    }
+
+    class ReducedBasicDeckProvider extends DeckProvider {
+        + ReducedBasicDeckProvider()
+        + ~ReducedBasicDeckProvider()
+
+        + GenerateDeck( GameModel& ) : std::vector<Card*>
+    }
+
+    Deck -> DeckProvider
+}
+
+@enduml
