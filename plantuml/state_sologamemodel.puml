@@ -31,14 +31,14 @@ state GameOverState
 
 [*] --> SoloIdleState
 
-ResearchState <- SoloIdleState : SellCardSP()
+ResearchState <- SoloIdleState : EndTurn()
 ResearchState -> SoloIdleState : ConfirmPurchases()
 PlacementConfirmationState --> SoloIdleState : TilePlacementConfirmed()
 PlacementConfirmationState <-- SoloIdleState : UseXSP()\nUseAction()\nPlayCard()
 SoloIdleState -> PaymentConfirmationState : UseXSP()\nUseAction()\nPlayCard()
 SoloIdleState <- PaymentConfirmationState : PaymentConfirmed()
 
-SoloIdleState --> GameEnd : EndTurn() [_generation >= SOLO_GAME_MAX_GENERATIONS]
+SoloIdleState --> GameEnd : EndTurn() [game is ending]
 GameEnd --> SoloPostLastGenerationState : [CanConvertPlantsToGreenery()]
 GameEnd --> GameOverState : [not CanConvertPlantsToGreenery()]
 SoloPostLastGenerationState -> GameOverState : EndTurn()

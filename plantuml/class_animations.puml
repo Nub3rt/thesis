@@ -1,0 +1,57 @@
+@startuml class_animations
+
+skinparam classAttributeIconSize 0
+
+package ::view {
+    struct AnimationParams <T> {
+        + start : T
+        + end : T
+        + elapsed : float
+        + duration : float
+    }
+
+    class "Animatable <T>" as anim_generic {
+        - _value : T
+        - _ a : std::optional<AnimationParams<T>>
+        - _ease : float => float
+
+        + Animatable()
+        + Animatable( T )
+
+        + operator->() : T*
+        + operator*() : T&
+        + Animating() : bool
+        + Set( T )
+        + UpdateAnim( T, duration : float, bool )
+        + SetAnim( start : T, end : T, duration : float )
+        + SetEase( float => float )
+        + Update( delta : float)
+    }
+
+    class "Animatable" as anim_vec3 {
+        - _value : vec3
+        - _ease : float => float
+
+        + x : Animatable<float>
+        + y : Animatable<float>
+        + z : Animatable<float>
+
+        + Animatable()
+        + Animatable( vec3 )
+
+        + operator->() : vec3*
+        + operator*() : vec3&
+        + Animating() : bool
+        + Set( vec3 )
+        + UpdateAnim( vec3, duration : float, bool )
+        + SetAnim( start : vec3, end : vec3, duration : float )
+        + SetEase( float => float )
+        + Update( delta : float)
+    }
+
+    anim_generic -> AnimationParams
+
+    anim_generic <|.. anim_vec3 : <<bind>>\n<T -> vec3>
+}
+
+@enduml

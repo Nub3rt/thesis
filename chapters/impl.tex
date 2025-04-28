@@ -65,8 +65,11 @@ Increasing a global parameter always increases the player's terraform rating.
 
 \section{Architecture}
 
-The application has two layers: \textit{Model} and \textit{View}. Business logic is completely separated in the \textit{Model}, and is platform independent. This means that separate frontends could be developed for this one backend.\\
+The application has two layers: \textit{Model} and \textit{View}. Business logic is completely separated in the \textit{Model}, and is platform independent. This means that separate frontends could be developed for this one backend.
+
 The main aspect during development was extensibility: there are multiple boards that can be played on, different decks using different cards, extensions which add new cards, new resources, or even new game features. In this documentation you can find multiple explanations for implementing new varieties.
+
+Since the game utilizes random chance (e.g. for card drawing), another aspect was that the application could be seeded, so that given the same seed for the game, the same random events happen.
 
 View manages and renders the window, stores information for rendering and communicates with the \textit{Model}. My implementation used OpenGL for rendering.
 
@@ -160,7 +163,7 @@ To implement different boards in the application, I have decided to use the \tex
 As Figure~\ref{fig:class_boards} shows, \textbf{ConcreteBoard}'s methods are almost all virtual or abstract. Board stores an instance of \textbf{ConcreteBoard}, and extends the interface of it with methods required for the game. A new board can simply be implemented by inheriting from \textbf{ConcreteBoard}. Here there are no such classes, but Board can also be derived from, to implement additional behavior, for example some functionality specific to an extension.
 
 Since the game board as a whole is also hex shaped, the tiles do not make out a full rectangle. There are multiple solutions to storing a board, and each and every subclass of \textbf{ConcreteBoard} can implement their own.\\
-For \textbf{TharsisConcreteBoard}, I choose the 2D array implementation shown on Figure~\ref{fig:board_memory}. I made this decision because indexing is easy and fast compared to other solutions and the elements don't move, they stay in memory for a full game, so after the initial allocation only fields of the elements are modified. This also means that the unused memory is negligible.
+For \textbf{TharsisConcreteBoard}, I choose the 2D array implementation shown on Figure~\ref{fig:board_memory}. I made this decision because indexing is easy and fast compared to other solutions and the elements don't move, they stay in memory for a full game, so after the initial allocation only fields of the elements are modified. This also means that the unused memory is negligible. Furthermore, special off-board tiles can be stored on the empty ones.
 
 \begin{figure}[H]
     \centering
@@ -313,7 +316,7 @@ Let's go over this with the solo variant. \textbf{SoloGameModel} inherits from \
 \begin{figure}[H]
     \centering
     \includegraphics[width=1.0\textwidth]{state_sologamemodel}
-    \caption{State diagram of the solo variant of the game.}
+    \caption{State diagram of the model fo the solo variant.}
     \label{fig:state_sologamemodel}
 \end{figure}
 
@@ -338,3 +341,131 @@ To solve this, I created the \texttt{RequestStateChange} method, which sets \tex
     \caption{Sequence diagram of an example for a tile placement.}
     \label{fig:sequence_placetile}
 \end{figure}
+
+\subsection{View}
+
+Aside from \textit{main.cpp}, every class is wrapped in the \textit{::view} namespace.
+
+As in \textit{Model}, I have created a \textit{constants.hpp} file in this project too for constant values, like positions, animation durations and more.
+
+\subsubsection{Utilities}
+
+\subsubsection*{GL utils}
+
+Some code was borrowed from the computer graphics team, mainly \textit{gl\_utils.*}, \textit{camera.\*} and \textit{spherical\_camera\_manipulator.\*}. I created an interface for camera manipulators and implemented a bobbing camera manipulator that "follows" the mouse on the game screen.
+
+\subsubsection*{Text rendering}
+
+The application needed some way to render text to the screen. For this, I implemented the \textbf{TextRenderer} static class. The base structure comes from LearnOpenGL\todo{megjelölni a forrást}. I have tweaked it to adapt it to my usage of OpenGL, and added some functionality, like centered text rendering. Note that this class can only render one line texts. At this point, only the first 128 characters of the ASCII character set.
+
+\subsubsection*{Animatable}
+
+For user experience and enjoyment, it is important that changes are smoothly animated, and not just abruptly appear on-screen. OpenGL provides no tools for this, so I had to implement tools for this from scratch. Luckily, GLM comes with a variety of easing functions that we can use for our animations.
+
+The \textit{animatable.hpp} header contains two templated data structures. \textbf{AnimationParams} is a simple template struct, containing the start and end value of an animation and the duration and elapsed time in seconds. \textbf{Animatable} is a template class which provides richer features for working with events.
+
+At all times \textbf{Animatable} stores the current value it's holding. The type of \textit{\_value} is \textbf{T} which is the template parameter of \textbf{Animatable}. It can be accessed with the indirection operator and the structure dereference operator (\texttt{*} and \texttt{->}). The value can be set at any time with the \texttt{Set} method, but this clears any ongoing animation. The class also contains an easing function, that can be set at any point. Its default value is linear interpolation.\todo{erre egy linket bedobjak ide? lehet értelmesebb mint ha én itt elmagyarázom hogy mik ezek}\\
+There can either be an ongoing animation effecting this value, or not. This is expressed with the member \textit{\_animation} of type \textbf{std::optional<AnimationParams<T>{}>}. When this optional contains a value, an animation is ongoing.\\
+An animation can be set in two ways. \texttt{SetAnim} takes a start and end value and a duration. It clears any ongoing animation, and starts a new animation with the supplied parameters. \texttt{UpdateAnim} on the other hand takes in the end value only, a duration and a boolean value \textit{force\_time} indicating to whether or not force duration override.
+\begin{compactitem}
+    \item If there is no animation ongoing, a new animation is set, where the start is the current value of the \textbf{Animatable}, the end is the parameter of the method, and the duration also.
+    \item If there is an ongoing animation, the end value is updated to the parameter of the method. If \textit{force\_time} is true, the elapsed value gets reset to zero, and the duration gets set to the duration parameter.
+\end{compactitem}
+The class features an \texttt{Update} method that takes the delta time, and updates the value based on the animation and the easing function. If the duration is over, it sets the value to the end value and clears the animation.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{class_animations}
+    \caption{Class diagram of animation utilities.}
+    \label{fig:class_animations}
+\end{figure}
+
+Since in the application we deal with colors, positions and much more that consist of vector data, it was required that \textbf{glm::vecX} types could be animated too. I solved this with template specialization. On Figure\ref{fig:class_animations}, the template specialization for \textbf{glm::vec3} is shown. An \textbf{Animatable<float>} is stored for each item of the vector. The base methods call their respective methods on each of the animatables. They are also public, so each one can be accessed and set independently. The value is also stored in an auxiliary \textit{\_value} member.
+
+\subsubsection*{TileWrapper}
+
+This class wraps one field of the game board. Information for rendering is stored here.
+
+\subsubsection*{CardWrapper}
+
+This class wraps a card. It features a state in the form of an enumerated type, which features the following values: \texttt{IDLE}, \texttt{HOVERED}, \texttt{DRAGGING}, \texttt{DRAWING} and \texttt{TO\_HAND}. Another enumerated type \textbf{Visual} stores what kind of visual effect the card currently has. It can have the following values: \texttt{NONE}, \texttt{HIGHLIGHT}, \texttt{ACTION\_HIGHLIGHT}, \texttt{SELL\_HIGHLIGHT} and \texttt{FADED}.
+
+Data for rendering is stored also, for example position, scale, and rotate. These are an instance of \textbf{Animatable}. The class implements methods to set all the easing functions at once.
+
+\subsubsection{Views}
+
+\textbf{View} is an abstract class that defines operations a view should or can implement: \texttt{Update}, \texttt{Render}, handling window, keyboard and mouse events.
+
+\subsubsection*{Game}
+
+\textbf{GameView} has similar structure to \textbf{GameModel} and the same thought behind it for extensibility. It also features the \textit{state design pattern}, but has slightly different states. There is an additional sell state, where the player can sell their cards, and there is no separate placement confirmation state for post last generation yet.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{state_sologameview}
+    \caption{State diagram of the view of the solo variant.}
+    \label{fig:state_sologameview}
+\end{figure}
+
+\textbf{SoloGameView} inherits from \textbf{GameView} and has solo variant state specialization also in the form of \textbf{SoloGameOverState}, as the end of the game is simpler in the solo variant than in the base game.
+
+\subsubsection*{Menu}
+
+\textbf{MenuView} implements \textbf{View}. This view renders the menu screen, with a title, new game and quit buttons, and if there is an ongoing game, a continue button. When the user selects the new game or the continue button, the view starts a transition to the game screen. For this, it invokes an event asking the Mars to be rendered. It signals the ending of the transition with another event invocation.
+
+\subsubsection*{App}
+
+The \textbf{App} class holds together the application. It stores an instance of \textbf{MenuView} and optionally an instance of \textbf{GameView}. It features a \textit{\_current\_view} member, which it updates and renders. But it is important to call \texttt{Resize} on every living \textbf{View} instance.
+
+\subsubsection*{Builder}
+
+To create a \textbf{GameView} that is populated with its respective \textbf{GameModel} which also needs to be initialized with a \textbf{DeckProvider} and a \textbf{Board}, I used the \textit{builder design pattern} to separate the construction of this complex object stack.
+
+\textbf{MenuView} uses \textbf{Builder} to create a new \textbf{GameView} when new game is pressed. After that, it passes the created instance back to \textbf{App}.
+
+\subsubsection*{\textit{main.cpp}}
+
+The entry point of the application. It initializes subsystems, libraries and contexts. It creates an instance of the \textbf{App} class and initializes it. After these configurations, it runs the render loop, in which the following steps get performed:
+\begin{itemize}
+    \item Processes every event from SDL. Most of them get passed down to \textbf{App} also.
+    \item Call \texttt{Update} on \textbf{App}.
+    \item Call \texttt{Render} on \textbf{App}.
+    \item Call \texttt{RenderGUI} on \textbf{App}.
+    \item Finish rendering by swapping the framebuffers.
+\end{itemize}
+
+\subsubsection{Rendering}
+
+\subsubsection*{App}
+
+\textbf{App} contains the camera for the application. During rendering, the first thing rendered is the skybox. This always gets rendered, so \textbf{App} handles this. The skybox is slowly rotated to achieve a deeper space feeling.
+
+\subsubsection*{Mouse picking}
+
+By default, OpenGL provides three framebuffers that store render data.
+\begin{itemize}
+    \item The color buffer has three float values for every pixel, ranging from 0 to 1. This is the frame being rendered, each of the three values corresponding to one of the tree colors: red, green and blue.
+    \item The depth buffer usually has 24 bits for every pixel. It is used to detect if the pixel being drawn is behind the already rendered pixel.
+    \item The stencil buffer usually has 8 bits, so its values can range from 0 to 255. It can be used for various different rendering tricks and after-effects.
+\end{itemize}
+
+I used the stencil buffer for mouse picking. Each clickable element has an associated ID, and on a mouse down, mouse up or mouse move event we can poll the current value of the corresponding pixel of the stencil buffer. This way, we can identify which element was clicked or hovered over.
+
+What ID to render can be set with the \texttt{SetStencilRef} method, but after rendering, it has to be set back to its original value, by calling \texttt{SetStencilRef} again without a parameter.
+
+\subsubsection*{Menu}
+
+On the menu screen, the title and three buttons need to be rendered. These are pre-made \textit{.png} files, as during the transition they need to be rendered 3D. The three buttons can be hovered and clicked.
+
+\subsubsection*{Game}
+
+First the game board is rendered. This is done per tile.
+\todo{megírni a véglegesre}
+
+Before rendering the HUD, the depth buffer is cleared, as everything here has to overlay what has been rendered so far. First the generation counter, menu button, end button, standard projects, global parameters and resources get rendered. After that, any state-specific rendering is carried out by calling \texttt{Render} on the current state. After that, the card panels get rendered, then the hand, and finally the animations.
+
+HUD rendering is basically 2D rendering, so it does not use the camera. Positions and sizes are calculated dynamically and relative to the window and window size.
+
+Cards and resources get their textures from sprite sheets. Card textures are derived from their \textbf{CardID}'s underlying value. Vertical and horizontal indices and strides are calculated in code, then get passed to the shaders with uniforms.
+
+Cards can have a colored highlight around them. This was done in the fragment shader. If the alpha value is big, a highlight will be drawn. The alpha value of the highlight is based on the distance from the edge. The threshold that represents the highlight being a solid color moves in and out to create a pulsating effect.

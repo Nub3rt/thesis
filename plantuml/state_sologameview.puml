@@ -1,0 +1,54 @@
+@startuml state_sologameview
+
+state ResearchState
+ResearchState : ToggleToBuyCard()
+ResearchState : GetTotalCost()
+ResearchState : ConfirmPurchases()
+
+state IdleState
+IdleState : UseXSP()
+IdleState : UseAction()
+IdleState : PlayCard()
+IdleState : EndTurn()
+
+state SellState
+SellState : PlayCard()
+
+state PlacementConfirmationState
+PlacementConfirmationState : TilePlacementConfirmed()
+
+state PaymentConfirmationState
+PaymentConfirmationState : PaymentConfirmed()
+
+state GameEnd <<choice>>
+
+state PostLastGenerationState
+PostLastGenerationState : ConvertPlantsToGreenery()
+PostLastGenerationState : EndTurn()
+
+state SoloGameOverState
+
+
+[*] --> IdleState
+
+ResearchState <- IdleState : ConfirmPurchases()
+ResearchState -> IdleState : EndTurn()
+SellState <-- IdleState : SellCardSP()
+SellState --> IdleState : EndTurn()
+PlacementConfirmationState <-- IdleState : UseXSP()\nUseAction()\nPlayCard()
+PlacementConfirmationState --> IdleState : TilePlacementConfirmed()
+IdleState -> PaymentConfirmationState : UseXSP()\nUseAction()\nPlayCard()
+IdleState <- PaymentConfirmationState : PaymentConfirmed()
+
+PlacementConfirmationState -[hidden]-> PaymentConfirmationState
+SellState -[hidden]> PlacementConfirmationState
+
+IdleState --> GameEnd : EndTurn() [game is ending]
+GameEnd --> PostLastGenerationState : [CanConvertPlantsToGreenery()]
+GameEnd --> SoloGameOverState : [not CanConvertPlantsToGreenery()]
+SoloGameOverState <- PostLastGenerationState : EndTurn()
+
+PaymentConfirmationState <-- PostLastGenerationState : ConvertPlantsToGreenery()
+PaymentConfirmationState --> PostLastGenerationState : PlacementConfirmed()
+
+@enduml
