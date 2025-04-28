@@ -434,6 +434,26 @@ The entry point of the application. It initializes subsystems, libraries and con
     \item Finish rendering by swapping the framebuffers.
 \end{itemize}
 
+\subsubsection{Animations}
+
+Using \textbf{Animatable}, we can create multiple animations. Since one action (like playing a card) can result in a lot of things happening (raising parameters, gaining resources, placing a tile all because of one card) I implemented an animation queue, where every animation has a set interval until the next animation cannot be started.
+
+So \textbf{Animation} is an abstract class, that implements this behavior. The constructor takes an optional \textit{lockout\_time} duration parameter. The update method handles the decreasing of this member, and then calls the abstract method \texttt{DoUpdate}. The class also contains two optional callables, that get called when the animation starts and ends.
+
+The \texttt{Render} abstract method is what renders the animation. This is implemented with the \textit{visitor design pattern}: when \textbf{GameView} wants to render an animation, it calls this method, in which the children classes can call back the \texttt{RenderAnimation} with themselves as the parameter.
+
+Concrete animations can then be derived from this class. For example, the \textbf{TextAnimation} class features a string to render, and its position, color and scale all wrapped in an instance of \textbf{Animatable}. \texttt{DoUpdate} calls \texttt{Update} on the animatables. Rendering is done with the current values from the animatables.//
+However, this class is pretty flexible, and can be used many ways. For example, \textbf{CardAnimation} only renders once, and it sets the respective \textbf{CardWrapper}'s animatable properties' animations.
+
+In \textbf{GameView}, there is an animation queue with the pending animation, a vector with ongoing animations, and an \textbf{std::optional<Animation*>} which is the animation that currently locks, meaning no animation can be started. These are updated in every loop by the following steps:
+\begin{itemize}
+    \item Every ongoing animation gets processed: If it is over, it gets removed from the vector and deleted, else it gets updated.
+    \item If there is a locking animation: if it still has time from its lockout, it simply gets updated, else it gets transferred to the ongoing animations, and updated (if it is not over already in which case it just gets deleted).
+    \item While there is no locking animation and the animation queue is not empty: the next animation gets popped from the queue. If it has a lockout duration, it gets assigned to be the next lockout animation, else it gets added to the ongoing animations.
+\end{itemize}
+
+There is also an implemented but unused feature: animations can be put in a collection with a delay. While the delay is not over, they do nothing. Once the delay is over, they get transferred to the ongoing animations. This feature doesn't support lockout.
+
 \subsubsection{Rendering}
 
 \subsubsection*{App}
