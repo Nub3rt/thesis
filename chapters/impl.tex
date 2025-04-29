@@ -489,3 +489,144 @@ HUD rendering is basically 2D rendering, so it does not use the camera. Position
 Cards and resources get their textures from sprite sheets. Card textures are derived from their \textbf{CardID}'s underlying value. Vertical and horizontal indices and strides are calculated in code, then get passed to the shaders with uniforms.
 
 Cards can have a colored highlight around them. This was done in the fragment shader. If the alpha value is big, a highlight will be drawn. The alpha value of the highlight is based on the distance from the edge. The threshold that represents the highlight being a solid color moves in and out to create a pulsating effect.
+
+
+\section{Testing}
+
+I wrote unit tests for the model using Google's Google Test framework.
+
+\begin{center}
+    \begin{longtable}{ | m{0.3\linewidth} | m{0.5\linewidth} }
+        \hline
+        \textbf{Text suite :: Test case} & \textbf{Description} \\
+        \hline \hline
+        \endhead
+
+        Event :: NoP aram & Test the class with no tmeplate arguments. Invoking, setting callback, clearing. \\
+        \hline
+        Event :: With Params & Test the class with different template arguments. \\
+        \hline
+
+        Tile :: Constructor & Test the initialization of the class. \\
+        \hline
+        Tile :: Getters Setter & Test trivial getters and setters. \\
+        \hline
+        Tile : Apply Placement Bonuses & Test player receiving placement bonuses. \\
+        \hline
+
+        TharsisBoard :: Get Set & Test trivial getters and seters. \\
+        \hline
+        TharsisBoard :: Place Tile & Test tile placement and placement bonus received. \\
+        \hline
+        TharsisBoard :: Noctis City & Test \texttt{NoctisCityIndex} method. \\
+        \hline
+        TharsisBoard :: Top Left  Get Neighbours & Test \texttt{GetNeighbouringTiles} method for the tile in the top left corner. \\
+        \hline
+        TharsisBoard :: Top Right Get Neighbours & Test \texttt{GetNeighbouringTiles} method for the tile in the top right corner. \\
+        \hline
+        TharsisBoard :: Right Get Neighbours & Test \texttt{GetNeighbouringTiles} method for the tile in the right corner. \\
+        \hline
+        TharsisBoard :: Bottom Right Get Neighbours & Test \texttt{GetNeighbouringTiles} method for the tile in the bottom right corner. \\
+        \hline
+        TharsisBoard :: Bottom Left Get Neighbours & Test \texttt{GetNeighbouringTiles} method for the tile in the bottom left corner. \\
+        \hline
+        TharsisBoard :: Left Get Neighbours & Test \texttt{GetNeighbouringTiles} method for the tile in the left corner. \\
+        \hline
+        TharsisBoard :: Middle Get Neighbours & Test \texttt{GetNeighbouringTiles} method for a tile in the middle. \\
+        \hline
+        TharsisBoard :: Neighbouring Tiles Of Type & Test the \texttt{GetNeighbouringTilesOfType} method for multiple tiles. \\
+        \hline
+        TharsisBoard :: Iterator & Test that the iterator works and never points to an invalid tile. \\
+        \hline
+
+        Board :: Get & Test trivial getters. \\
+        \hline
+        Board :: Tiles Of Type & Test \texttt{GetTilesOfType} method. \\
+        \hline
+        Board :: Valid Ocean Tiles & Test \texttt{GetValidOceanTiles} method. \\
+        \hline
+        Board :: Valid Greenery Tiles & Test \texttt{GetValidGreeneryTiles} method  when player has no placed tiles. \\
+        \hline
+        Board :: Valid Greenery Tiles With Owned Tile & Test \texttt{GetValidGreeneryTiles} method  when player owns tiles. \\
+        \hline
+        Board :: Valid City Tiles & Test \texttt{GetValidCityTiles} method. \\
+        \hline
+        Board :: Valid Lonely City Tiles & Test \texttt{GetValidLonelyCityTiles} method. \\
+        \hline
+        Board :: Valid Urbanized Area Tiles & Test \texttt{GetValidUrbanizedAreaTiles} method. \\
+        \hline
+
+        Cards :: Owner Logic & Test the state and transition methods. \\
+        \hline
+        Cards :: Event & Thoroughly test an event type card. \\
+        \hline
+        Cards :: Automated & Thoroughly rest an automated type card. \\
+        \hline
+        Cards : Active With Action & Thoroughly test an action card. \\
+        \hline
+        Cards : Active With Effect & Thoroughly test an effect card. \\
+        \hline
+
+        Deck : Base Functionality & Test drawing and discarding card. \\
+        \hline
+        Deck : Reshuffle Only On Empty & Test that discarded cards do not get put back in before the deck is empty. \\
+        \hline
+    \end{longtable}
+\end{center}
+
+The test pass, and they have helped when some parts of the model were tweaked.
+
+In the case of real-time applications with graphics rendering, testing the view with unit test is 
+not a reliable option. One of the reasons is that while running calculations on the GPU increase speed greatly, it does not allow for accessing in-between results of the calculations. Furthermore, computer graphics in itself is a field where almost everything is an approximation.
+
+For these reasons, I tested the application manually and documented each test.
+
+\begin{center}
+    \begin{longtable}{ | m{0.15\linewidth} | m{0.55\linewidth} | m{0.12\linewidth} }
+        \hline
+        \textbf{Test case} & \textbf{Description} & \textbf{Result} \\
+        \hline \hline
+        \endhead
+
+        Launch program & A window appears, showing the title of the game, a new game button and a quit button. & \checkmark \\
+        \hline
+        Quit & Clicking on the quit button exits the application & \checkmark \\
+        \hline
+        New game & Clicking new game starts transition to the gmae screen. At the end of the transition, the game screen is visible with a freshly started game. & \checkmark \\
+        \hline
+        Continue & If the continue button is visible, clicking on it starts transition to the game screen. At the end, the last played game is restored and can be continued. & \checkmark \\
+        \hline
+        Menu button & Clicking the button labeled menu on the game screen starts transition to the menu screen. The continue button is now visible. & \checkmark \\
+        \hline
+        Play card 1 & In the action state, I can drag out cards. Releasing them below the play line sends them back to the hand. & \checkmark \\
+        \hline
+        Play card 2 & In the action state, dragging out a card with no highlight (meaning it cannot be played) above the play line releases the card, sending it back to the hand. & \checkmark \\
+        \hline
+        Play card 3 & In the action state, dragging out a card with a green highlight (meaning it can be played) above the play line turns the highlight blue. Releasing the card here plays the card. & \checkmark \\
+        \hline
+        Use sell cards & In the action state, hovering over the sell cards standard project enlarges it. Clicking on it enters the sell state, making all cards have a red highlight. & \checkmark \\
+        \hline
+        Sell cards & In the sell state, all cards can be dragged out. Dragging the over the player line gives them a faded effect. Releasing them here sells them. & \checkmark \\
+        \hline
+        Exit sell state & In the sell state the end button is labeled Done. Clicking on it exits the sell state. & \checkmark \\
+        \hline
+        Use standard projects & Hovering over standard project makes them enlarges them if they can be used. If usable, clicking on it performs the action. & \checkmark \\
+        \hline
+        Panels & Clicking on a panel or pressing their respective key opens or closes the panel. Clicking on cards by default does nothing. & \checkmark \\
+        \hline
+        Panel page turn & If a panel is open and the player has played more than 8 cards of that type, the player can switch the page showing the cards with the arrows or the arrow keys. & \checkmark \\
+        \hline
+        Using action cards  & On the action cards panel, if an action can be used, the card is highlighted in blue. Clicking on it uses the action of the card, and it will have a faded out effect for the rest of the generation. & \checkmark \\
+        \hline
+        Placing tile & When a tile has to be placed, valid tiles will have a white outline, the others a dark one. Clicking on a valid tile confirms the placement and places the tile. & \checkmark \\
+        \hline
+        Payment confirmation & When an action can be paid for with resources, a window will appear to confirm the payment. The cost to pay, resource type and resource values are shown. Amounts can be set with sliders that automatically adjust the amount of the other type of resource. Clicking confirm on the window confirms the payment. & \checkmark \\
+        \hline
+        End turn & In the action state, clicking the end button ends the generation. Production phase is performed automatically, and the generation is ended. & \checkmark \\
+        \hline
+        Research state & Four cards are shown on the screen. Each one can be toggled to be bought or not. & \checkmark \\
+        \hline
+        Confirming research & In the research state, the label of the end button is Confirm. Clicking on it confirms the research, buying the selected cards and discarding the others. The game proceeds to the action state. & \checkmark \\
+        \hline
+    \end{longtable}
+\end{center}
