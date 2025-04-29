@@ -18,6 +18,20 @@ The following libraries and versions have been used for the application. Use thi
     \item \textbf{Simple DirectMedia Layer (SDL):} (zlib License) - window and input manager.
     \item \textbf{Dear ImGui:} (MIT License) - graphical user interface for debugging and tooling.
     \item \textbf{FreeType:} (The FreeType Project License) - library for font rendering.
+    \item \textbf{Libraries from the Computer Graphics Group at ELTE:} Some libraries I use were sourced from the group where I wrote my thesis.
+\end{itemize}
+
+\subsection{Assets}
+
+Some parts of the textures and fonts were borrowed from open-source projects.
+
+\begin{itemize}
+    \item \textbf{Terraforming Mars Open-source} - \hyperref{https://github.com/terraforming-mars/terraforming-mars}{https://github.com/terraforming-mars/terraforming-mars} - GPL-3.0 License \\
+    The textures for the cards were sourced from here, slightly modified.
+    \item \textbf{TM Cardmaker} - \hyperref{https://github.com/SliceOfBread/tm_cardmaker}{https://github.com/SliceOfBread/tm_cardmaker} - GPL-3.0 License \\
+    Resource, global parameter and miscellanious textures and fonts were sourced from here. Some were modified for further textures.
+    \item \textbf{Space 3D} - \hyperref{https://tools.wwwtyro.net/space-3d/index.html}{https://tools.wwwtyro.net/space-3d/index.html} - WTFPL \\
+    A space skybox generator tool.
 \end{itemize}
 
 \subsection{Compilation}
@@ -33,7 +47,7 @@ Compiling the program in \textit{Release} mode assembles the program in the \tex
 
 \subsubsection*{Menu}
 
-The player should be able to start a new game and exit the application. Furthermore, if there is an ongoing game, the user should be able to continue said game.
+The player should be able to start a new game and exit the application. Furthermore, if there is an ongoing game, the user should be able to continue said game. The use case diagram for this screen can be seen in Figure~\ref{fig:usecase_menu}.
 
 \begin{figure}[H]
     \centering
@@ -44,7 +58,7 @@ The player should be able to start a new game and exit the application. Furtherm
 
 \subsubsection*{Game}
 
-The player should always have the option to leave the game. Available use cases change based on the \hyperref[user:usage:state]{\textit{state}} of the game.
+The player should always have the option to leave the game. Available use cases change based on the \hyperref[user:usage:state]{\textit{state}} of the game. The use case diagram for this screen can be seen in Figure~\ref{fig:usecase_game}.
 
 \begin{figure}[H]
     \centering
@@ -53,7 +67,7 @@ The player should always have the option to leave the game. Available use cases 
     \label{fig:usecase_game}
 \end{figure}
 
-Increasing a global parameter always increases the player's terraform rating.
+Increasing a global parameter always increases the player's terraform rating. The detailed use cases for these can be seen in Figure~\ref{fig:usecase_actions}.
 
 \begin{figure}[H]
     \centering
@@ -83,10 +97,12 @@ The \textbf{App} class holds together the application: it stores \textit{View} i
     \item Clean up once the application is about to exit.
 \end{compactitem}
 
+The package diagram of the solution can be seen in Figure~\ref{fig:package}.
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{package}
-    \caption{Package diagram of the application}
+    \caption{Package diagram of the application.}
     \label{fig:package}
 \end{figure}
 
@@ -123,11 +139,9 @@ To avoid magic numbers in the code, I have created a \textit{constants.hpp} head
 
 \subsubsection{The board}
 
-The \textit{::model::boards} namespace contains the part of the code that implements the game board. Mars is made up of hexes, and to be more specific, the hexes have pointy-top orientation. Storing tables made up of hexes is not trivial, and there are multiple ways to implement it.
+The \textit{::model::boards} namespace contains the part of the code that implements the game board. Mars is made up of hexes, and to be more specific, the hexes have pointy-top orientation. Storing tables made up of hexes is not trivial, and there are multiple ways to implement it. More can be read about this topic from the article written by Amit Patel\cite{patel2013hex}.
 
-\todo{forrásmegjelölés}
-
-I choose to go with the axial coordinate system. Here every square has a $q$ and an $r$ coordinate. Increasing the $q$ coordinate moves right horizontally, and increasing the $r$ coordinate moves down, but instead of vertically, it moves on the line you get by rotating the $q$ axis $60^\circ$ in the negative direction. This alignment is matches with the usual layout in programming, where the $y$-axis is directed downwards.
+I choose to go with the axial coordinate system shown in Figure~\ref{fig:axial}. Here every square has a $q$ and an $r$ coordinate. Increasing the $q$ coordinate moves right horizontally, and increasing the $r$ coordinate moves down, but instead of vertically, it moves on the line you get by rotating the $q$ axis $60^\circ$ in the negative direction. This alignment is matches with the usual layout in programming, where the $y$-axis is directed downwards.
 
 \begin{figure}[H]
     \centering
@@ -146,7 +160,7 @@ This class represents a single tile on the board. For convenience, they store th
 
 \subsubsection*{Boards}
 
-To implement different boards in the application, I have decided to use the \textit{bridge design pattern}, as
+To implement different boards in the application, I have decided to use the \textit{bridge design pattern}\cite{gamma1994design}, as
 \begin{compactitem}
     \item it hides the underlying data structure in the form of the implementor,
     \item it enables different board layouts and implementations, as classes can derive from the implementor, each one representing a different board variant, \textit{but} at the same time
@@ -162,8 +176,8 @@ To implement different boards in the application, I have decided to use the \tex
 
 As Figure~\ref{fig:class_boards} shows, \textbf{ConcreteBoard}'s methods are almost all virtual or abstract. Board stores an instance of \textbf{ConcreteBoard}, and extends the interface of it with methods required for the game. A new board can simply be implemented by inheriting from \textbf{ConcreteBoard}. Here there are no such classes, but Board can also be derived from, to implement additional behavior, for example some functionality specific to an extension.
 
-Since the game board as a whole is also hex shaped, the tiles do not make out a full rectangle. There are multiple solutions to storing a board, and each and every subclass of \textbf{ConcreteBoard} can implement their own.\\
-For \textbf{TharsisConcreteBoard}, I choose the 2D array implementation shown on Figure~\ref{fig:board_memory}. I made this decision because indexing is easy and fast compared to other solutions and the elements don't move, they stay in memory for a full game, so after the initial allocation only fields of the elements are modified. This also means that the unused memory is negligible. Furthermore, special off-board tiles can be stored on the empty ones.
+Since the game board as a whole is also hex shaped, the tiles do not make out a full rectangle. There are multiple solutions to storing a board, and each and every subclass of \textbf{ConcreteBoard} can implement their own. \\
+For \textbf{TharsisConcreteBoard}, I choose the 2D array implementation shown in Figure~\ref{fig:board_memory}. I made this decision because indexing is easy and fast compared to other solutions and the elements don't move, they stay in memory for a full game, so after the initial allocation only fields of the elements are modified. This also means that the unused memory is negligible. Furthermore, special off-board tiles can be stored on the empty ones.
 
 \begin{figure}[H]
     \centering
@@ -174,13 +188,13 @@ For \textbf{TharsisConcreteBoard}, I choose the 2D array implementation shown on
 
 \subsubsection*{Iterators}
 
-Notice the \texttt{begin} and \texttt{end} methods in the class diagram on Figure~\ref{fig:class_boards}. It was a requirement that boards could be iterated over. However, there were multiple obstacles I needed to overcome during the design and implementation of a universally usable iterator.
+Notice the \texttt{begin} and \texttt{end} methods in the class diagram in Figure~\ref{fig:class_boards}. It was a requirement that boards could be iterated over. However, there were multiple obstacles I needed to overcome during the design and implementation of a universally usable iterator.
 
 Since there could be any number of different board implementations, each one could potentially have a fundamentally different iterator. This sparked the interest to make an abstract \textbf{Iterator} base class, and derive iterators for every \textbf{ConcreteBoard} implementation.
 
 But having \textbf{Iterator} as a base class meant that \texttt{begin} and \texttt{end} cannot simply return an \textbf{Iterator} instance because of object slicing\footnote{The derived class needs more memory than its parent class.}. The problem is, returning a pointer to an \textbf{Iterator} created by \textit{new} does not sound good either: nobody expects a pointer when they call \texttt{begin} on a container and no one expects that they need to call delete on it. This would just be bad design. Furthermore, it would be a pointer: the semantics for using the \textbf{iterator} would be different, and you could not even use it for a range-based for loop.
 
-My solution: I created a child class of \textbf{Iterator} called \textbf{IteratorWrapper}. It has a constructor that takes an \textbf{Iterator} pointer - any one of our concrete iterators - automatically deletes it when \textbf{IteratorWrapper} goes out of scope, and delegates every operation to the \textbf{Iterator} it is holding.
+My solution: I created a child class of \textbf{Iterator} called \textbf{IteratorWrapper}, as depicted in Figure~\ref{fig:class_iterators}. It has a constructor that takes an \textbf{Iterator} pointer - any one of our concrete iterators - automatically deletes it when \textbf{IteratorWrapper} goes out of scope, and delegates every operation to the \textbf{Iterator} it is holding.
 
 \begin{figure}[H]
     \centering
@@ -207,17 +221,19 @@ The game features three types of cards:
     \item \textbf{Active card} (blue) are similar to automated cards, but they either have an \textit{effect} or an \textit{action}.
     \begin{compactitem}
         \item \textit{Effect cards} have ongoing effects, that trigger automatically on specific events (e.g. when the player places a city they gain some resources, or all cards cost one less).
-        \item \textit{Action cards} have an action, that the player can choose to perform once each generation. They may have a cost needed to perform said action.\\
+        \item \textit{Action cards} have an action, that the player can choose to perform once each generation. They may have a cost needed to perform said action. \\
         There can be multiple different actions on one card. In this case, only one of them can be used in each generation.
     \end{compactitem}
 \end{compactitem}
 
 Action cards have an associated enumerated type \textbf{Availability}, which represents their state:
 \begin{compactitem}
-    \item usable
-    \item not usable
-    \item used this generation
+    \item usable,
+    \item not usable,
+    \item used this generation.
 \end{compactitem}
+
+The full class diagram can be examined in Figure~\ref{fig:class_cards}.
 
 \begin{figure}[H]
     \centering
@@ -228,9 +244,9 @@ Action cards have an associated enumerated type \textbf{Availability}, which rep
 
 The tag system is implemented in the \textbf{Card} parent class. The private \textit{\_tags} member holds this information, and derived concrete classes should utilize The \texttt{AddTag} protected method in their constructors to configure the correct amount of tags.
 
-The \textit{template method design pattern} is used a lot in these classes. \textbf{Card}'s other protected methods are all virtual, and they are used by the methods listed in the next paragraphs.
+The \textit{template method design pattern}\cite{gamma1994design} is used a lot in these classes. \textbf{Card}'s other protected methods are all virtual, and they are used by the methods listed in the next paragraphs.
 
-A card has some kind of state and state-dependent logic. These are the three states cards can have:
+A card has some kind of state and state-dependent logic as indicated in Figure~\ref{fig:state_cards}. These are the three states cards can have:
 \begin{compactitem}
     \item The card is in the deck if $\_holder = nullptr \land \_owner = nullptr$
     \item The card is in the player's hand if $\_holder \neq nullptr \land \_owner = nullptr$
@@ -245,7 +261,7 @@ The following methods have state-specific behaviour: \texttt{Buy}, \texttt{Sell}
     \label{fig:state_cards}
 \end{figure}
 
-Playing a card is a more complicated process. The \textbf{Player} class holding the \textbf{Card} instance in its hand has a \texttt{PlayCard} method, which handles most of the logic. Resources cannot be deducted in the \textbf{Card} class, since the \textbf{Player} might pay with Steel or Titanium resources if the card is of Building or Space type. In this case, \texttt{DoPlayCard} gets passed as a function pointer to be called after payment confirmation.
+Playing a card is a more complicated process as illustrated in Figure~\ref{fig:sequence_playcard}. The \textbf{Player} class holding the \textbf{Card} instance in its hand has a \texttt{PlayCard} method, which handles most of the logic. Resources cannot be deducted in the \textbf{Card} class, since the \textbf{Player} might pay with Steel or Titanium resources if the card is of Building or Space type. In this case, \texttt{DoPlayCard} gets passed as a function pointer to be called after payment confirmation.
 
 \begin{figure}[H]
     \centering
@@ -258,9 +274,9 @@ The concrete cards are contained in the \textit{::model::decks::cards} namespace
 
 \subsubsection*{The deck and deck providers}
 
-In the course of the game, players can draw cards from a pile of cards - the deck - and sell - discard - cards they decide to. To enable multiple card sets for the game, I created a \textbf{DeckProvider} abstract class, which has one method, \texttt{GenerateDeck}, which returns a freshly created list of cards. This method has to be overridden in derived classes, returning a different set of cards for each subclass. These classes can even implement the \textit{singleton design pattern}.
+In the course of the game, players can draw cards from a pile of cards - the deck - and sell - discard - cards they decide to. To enable multiple card sets for the game, I created a \textbf{DeckProvider} abstract class, which has one method, \texttt{GenerateDeck}, which returns a freshly created list of cards. This method has to be overridden in derived classes, returning a different set of cards for each subclass. These classes can even implement the \textit{singleton design pattern}\cite{gamma1994design}.
 
-An instance of the \textbf{DeckProvider} class can be injected into the \textbf{Deck} class. \textbf{Deck} initializes itself with the cards that \texttt{GenerateDeck} returns, shuffling them. \textbf{Card}s can be drawn from \textbf{Deck}, and discarded cards get stored in another member. When the deck is empty at card draw, discarded cards get shuffled and put back into the deck.
+An instance of the \textbf{DeckProvider} class can be injected into the \textbf{Deck} class. \textbf{Deck} initializes itself with the cards that \texttt{GenerateDeck} returns, shuffling them. \textbf{Card}s can be drawn from \textbf{Deck}, and discarded cards get stored in another member. When the deck is empty at card draw, discarded cards get shuffled and put back into the deck. The full class diagram of this namespace can be seen in Figure~\ref{fig:class_decks}.
 
 \begin{figure}[H]
     \centering
@@ -271,7 +287,7 @@ An instance of the \textbf{DeckProvider} class can be injected into the \textbf{
 
 \subsubsection{\textit{::model}}
 
-This section contains classes directly in the namespace \textit{::model}. There are two enumerated values: \textbf{Tag} and \textbf{Resource}.
+This section contains classes directly in the namespace \textit{::model} as shown in Figure~\ref{fig:class_model}. There are two enumerated values: \textbf{Tag} and \textbf{Resource}.
 
 \begin{figure}[H]
     \centering
@@ -290,7 +306,7 @@ The player class stores data about a player. Resources, resource productions are
 
 \subsubsection*{Core Model}
 
-The game leans heavily toward a state-centric architecture. The model was designed with this in mind from the start, and I am using the \textit{state design pattern}. As before, it is still important to make a construct that allows new game modes and variants to be implemented easily and following the SOLID design principles. I identified the following states during planning:
+The game leans heavily toward a state-centric architecture. The model was designed with this in mind from the start, and I am using the \textit{state design pattern}\cite{gamma1994design}. As before, it is still important to make a construct that allows new game modes and variants to be implemented easily and following the SOLID design principles. I identified the following states during planning:
 
 \begin{itemize}
     \item \textbf{Research state:} Corresponds to the research phase in the game. The player receives four cards, and can buy as many of them as they want, each costing 3 Credits.
@@ -302,9 +318,9 @@ The game leans heavily toward a state-centric architecture. The model was design
     \item \textbf{Game over state:} After the greenery converting phase, the game goes to this state. No actions are available here.
 \end{itemize}
 
-\textbf{GameModel} is an abstract class, that implements most of the features required for a usual game of Terraforming Mars. The base states inheriting from \textbf{GameModelState} were written for this abstract \textbf{GameModel}, which has virtual \texttt{CreateStateVariant} methods. Whenever a state change is about to happen and a new state instance has to be created, they get constructed through these methods. Different game variants can then inherit from \textbf{GameModel}, and if they need they can also create specialized state classes inheriting from the different \textbf{GameModelState} classes (or even from \textbf{GameModelState} itself). If they do, they need to override the appropriate \texttt{CreateStateVariant} method so that the model can create the correct state instance for the variant.
+\textbf{GameModel} is an abstract class, that implements most of the features required for a usual game of Terraforming Mars. Part of the class diagram is displayed in Figure~\ref{fig:class_gamemodel}. The base states inheriting from \textbf{GameModelState} were written for this abstract \textbf{GameModel}, which has virtual \texttt{CreateStateVariant} methods. Whenever a state change is about to happen and a new state instance has to be created, they get constructed through these methods. Different game variants can then inherit from \textbf{GameModel}, and if they need they can also create specialized state classes inheriting from the different \textbf{GameModelState} classes (or even from \textbf{GameModelState} itself). If they do, they need to override the appropriate \texttt{CreateStateVariant} method so that the model can create the correct state instance for the variant.
 
-Let's go over this with the solo variant. \textbf{SoloGameModel} inherits from \textbf{GameModel}, and overrides some methods: the abstract \texttt{CreatePlayer} method, since starting terraform rating and resource productions varies between game modes. Turn ending logic is also different in solo games, so I created \textbf{SoloIdleState} and \textbf{SoloPostLastGeneration}, both inheriting from their respective parent classes.
+Let's go over this with the solo variant as outlined in Figure~\ref{fig:state_sologamemodel}. \textbf{SoloGameModel} inherits from \textbf{GameModel}, and overrides some methods: the abstract \texttt{CreatePlayer} method, since starting terraform rating and resource productions varies between game modes. Turn ending logic is also different in solo games, so I created \textbf{SoloIdleState} and \textbf{SoloPostLastGeneration}, both inheriting from their respective parent classes.
 
 \begin{figure}[H]
     \centering
@@ -320,7 +336,7 @@ Let's go over this with the solo variant. \textbf{SoloGameModel} inherits from \
     \label{fig:state_sologamemodel}
 \end{figure}
 
-Because only one tile can be placed at a time, but one action can result in multiple tile placements, there has to be some sort of mechanism that allows this behavior. For this, I created a \textbf{Request} base class in \textbf{GameModel}, and queue that stores pending request. In the idle state, if there is a request, it gets performed. In placement and payment confirmation state, after confirmation was received and there are requests, instead of going back to the idle state, the next request gets performed.
+Because only one tile can be placed at a time, but one action can result in multiple tile placements, there has to be some sort of mechanism that allows this behavior. For this, I created a \textbf{Request} base class in \textbf{GameModel} as represented in Figure~\ref{fig:class_requests}, and a queue that stores pending request. In the idle state, if there is a request, it gets performed. In placement and payment confirmation state, after confirmation was received and there are requests, instead of going back to the idle state, the next request gets performed.
 
 \begin{figure}[H]
     \centering
@@ -329,11 +345,13 @@ Because only one tile can be placed at a time, but one action can result in mult
     \label{fig:class_requests}
 \end{figure}
 
-For performing the next request, I use the \textit{visitor design pattern}. After popping the next request from the queue, the abstract method \texttt{Perform} gets called, in which every subclass calls the state's \texttt{PerformRequest} overloaded method with \textit{this} as argument.
+For performing the next request, I use the \textit{visitor design pattern}\cite{gamma1994design}. After popping the next request from the queue, the abstract method \texttt{Perform} gets called, in which every subclass calls the state's \texttt{PerformRequest} overloaded method with \textit{this} as argument.
 
 There is a flaw in this design: you cannot directly change the state from a state method, as it can result in dangling references in the call stack. This cannot be solved with \textit{std::shared\_ptr}, as its reference counter does not increase on method calls on the held object.
 
 To solve this, I created the \texttt{RequestStateChange} method, which sets \textit{\_next\_state} to the parameter, and created an \texttt{Update} method which sets the state to the new one. This means that the model has an update method that has to be called frequently, in a render loop probably, which is far from optimal. Resolving this issue is important in the future. \todo{ezt már nem tudtam itt értelmesen megfogalmazni}
+
+For a more complex sequence diagram involving state changes, refer to Figure~\ref{fig:sequence_placetile}.
 
 \begin{figure}[H]
     \centering
@@ -356,16 +374,16 @@ Some code was borrowed from the computer graphics team, mainly \textit{gl\_utils
 
 \subsubsection*{Text rendering}
 
-The application needed some way to render text to the screen. For this, I implemented the \textbf{TextRenderer} static class. The base structure comes from LearnOpenGL\todo{megjelölni a forrást}. I have tweaked it to adapt it to my usage of OpenGL, and added some functionality, like centered text rendering. Note that this class can only render one line texts. At this point, only the first 128 characters of the ASCII character set.
+The application needed some way to render text to the screen. For this, I implemented the \textbf{TextRenderer} static class. The base structure comes from the LearnOpenGL website by Joey de Vries\cite{learnopengl}. I have tweaked it to adapt it to my usage of OpenGL, and added some functionality, like centered text rendering. Note that this class can only render one line texts. At this point, only the first 128 characters of the ASCII character set can be rendered, other characters get rendered as a \texttt{?}.
 
 \subsubsection*{Animatable}
 
-For user experience and enjoyment, it is important that changes are smoothly animated, and not just abruptly appear on-screen. OpenGL provides no tools for this, so I had to implement tools for this from scratch. Luckily, GLM comes with a variety of easing functions that we can use for our animations.
+For user experience and enjoyment, it is important that changes are smoothly animated, and not just abruptly appear on-screen. OpenGL provides no tools for this, so I had to implement tools for this from scratch. Luckily, GLM comes with a variety of easing functions\cite{ease} that we can use for our animations.
 
-The \textit{animatable.hpp} header contains two templated data structures. \textbf{AnimationParams} is a simple template struct, containing the start and end value of an animation and the duration and elapsed time in seconds. \textbf{Animatable} is a template class which provides richer features for working with events.
+The \textit{animatable.hpp} header contains two templated data structures as seen in Figure~\ref{fig:class_animations}. \textbf{AnimationParams} is a simple template struct, containing the start and end value of an animation and the duration and elapsed time in seconds. \textbf{Animatable} is a template class which provides richer features for working with events.
 
-At all times \textbf{Animatable} stores the current value it's holding. The type of \textit{\_value} is \textbf{T} which is the template parameter of \textbf{Animatable}. It can be accessed with the indirection operator and the structure dereference operator (\texttt{*} and \texttt{->}). The value can be set at any time with the \texttt{Set} method, but this clears any ongoing animation. The class also contains an easing function, that can be set at any point. Its default value is linear interpolation.\todo{erre egy linket bedobjak ide? lehet értelmesebb mint ha én itt elmagyarázom hogy mik ezek}\\
-There can either be an ongoing animation effecting this value, or not. This is expressed with the member \textit{\_animation} of type \textbf{std::optional<AnimationParams<T>{}>}. When this optional contains a value, an animation is ongoing.\\
+At all times \textbf{Animatable} stores the current value it's holding. The type of \textit{\_value} is \textbf{T} which is the template parameter of \textbf{Animatable}. It can be accessed with the indirection operator and the structure dereference operator (\texttt{*} and \texttt{->}). The value can be set at any time with the \texttt{Set} method, but this clears any ongoing animation. The class also contains an easing function, that can be set at any point. Its default value is linear interpolation. \\
+There can either be an ongoing animation effecting this value, or not. This is expressed with the member \textit{\_animation} of type \textbf{std::optional<AnimationParams<T>{}>}. When this optional contains a value, an animation is ongoing. \\
 An animation can be set in two ways. \texttt{SetAnim} takes a start and end value and a duration. It clears any ongoing animation, and starts a new animation with the supplied parameters. \texttt{UpdateAnim} on the other hand takes in the end value only, a duration and a boolean value \textit{force\_time} indicating to whether or not force duration override.
 \begin{compactitem}
     \item If there is no animation ongoing, a new animation is set, where the start is the current value of the \textbf{Animatable}, the end is the parameter of the method, and the duration also.
@@ -380,7 +398,7 @@ The class features an \texttt{Update} method that takes the delta time, and upda
     \label{fig:class_animations}
 \end{figure}
 
-Since in the application we deal with colors, positions and much more that consist of vector data, it was required that \textbf{glm::vecX} types could be animated too. I solved this with template specialization. On Figure\ref{fig:class_animations}, the template specialization for \textbf{glm::vec3} is shown. An \textbf{Animatable<float>} is stored for each item of the vector. The base methods call their respective methods on each of the animatables. They are also public, so each one can be accessed and set independently. The value is also stored in an auxiliary \textit{\_value} member.
+Since in the application we deal with colors, positions and much more that consist of vector data, it was required that \textbf{glm::vecX} types could be animated too. I solved this with template specialization. in Figure\ref{fig:class_animations}, the template specialization for \textbf{glm::vec3} is shown. An \textbf{Animatable<float>} is stored for each item of the vector. The base methods call their respective methods on each of the animatables. They are also public, so each one can be accessed and set independently. The value is also stored in an auxiliary \textit{\_value} member.
 
 \subsubsection*{TileWrapper}
 
@@ -398,7 +416,7 @@ Data for rendering is stored also, for example position, scale, and rotate. Thes
 
 \subsubsection*{Game}
 
-\textbf{GameView} has similar structure to \textbf{GameModel} and the same thought behind it for extensibility. It also features the \textit{state design pattern}, but has slightly different states. There is an additional sell state, where the player can sell their cards, and there is no separate placement confirmation state for post last generation yet.
+\textbf{GameView} has similar structure to \textbf{GameModel} as supported in Figure~\ref{fig:state_sologameview} and the same thought behind it for extensibility. It also features the \textit{state design pattern}\cite{gamma1994design}, but has slightly different states. There is an additional sell state, where the player can sell their cards, and there is no separate placement confirmation state for post last generation yet.
 
 \begin{figure}[H]
     \centering
@@ -419,7 +437,7 @@ The \textbf{App} class holds together the application. It stores an instance of 
 
 \subsubsection*{Builder}
 
-To create a \textbf{GameView} that is populated with its respective \textbf{GameModel} which also needs to be initialized with a \textbf{DeckProvider} and a \textbf{Board}, I used the \textit{builder design pattern} to separate the construction of this complex object stack.
+To create a \textbf{GameView} that is populated with its respective \textbf{GameModel} which also needs to be initialized with a \textbf{DeckProvider} and a \textbf{Board}, I used the \textit{builder design pattern}\cite{gamma1994design} to separate the construction of this complex object stack.
 
 \textbf{MenuView} uses \textbf{Builder} to create a new \textbf{GameView} when new game is pressed. After that, it passes the created instance back to \textbf{App}.
 
@@ -440,9 +458,9 @@ Using \textbf{Animatable}, we can create multiple animations. Since one action (
 
 So \textbf{Animation} is an abstract class, that implements this behavior. The constructor takes an optional \textit{lockout\_time} duration parameter. The update method handles the decreasing of this member, and then calls the abstract method \texttt{DoUpdate}. The class also contains two optional callables, that get called when the animation starts and ends.
 
-The \texttt{Render} abstract method is what renders the animation. This is implemented with the \textit{visitor design pattern}: when \textbf{GameView} wants to render an animation, it calls this method, in which the children classes can call back the \texttt{RenderAnimation} with themselves as the parameter.
+The \texttt{Render} abstract method is what renders the animation. This is implemented with the \textit{visitor design pattern}\cite{gamma1994design}: when \textbf{GameView} wants to render an animation, it calls this method, in which the children classes can call back the \texttt{RenderAnimation} with themselves as the parameter.
 
-Concrete animations can then be derived from this class. For example, the \textbf{TextAnimation} class features a string to render, and its position, color and scale all wrapped in an instance of \textbf{Animatable}. \texttt{DoUpdate} calls \texttt{Update} on the animatables. Rendering is done with the current values from the animatables.//
+Concrete animations can then be derived from this class. For example, the \textbf{TextAnimation} class features a string to render, and its position, color and scale all wrapped in an instance of \textbf{Animatable}. \texttt{DoUpdate} calls \texttt{Update} on the animatables. Rendering is done with the current values from the animatables. \\
 However, this class is pretty flexible, and can be used many ways. For example, \textbf{CardAnimation} only renders once, and it sets the respective \textbf{CardWrapper}'s animatable properties' animations.
 
 In \textbf{GameView}, there is an animation queue with the pending animation, a vector with ongoing animations, and an \textbf{std::optional<Animation*>} which is the animation that currently locks, meaning no animation can be started. These are updated in every loop by the following steps:
@@ -630,3 +648,19 @@ For these reasons, I tested the application manually and documented each test.
         \hline
     \end{longtable}
 \end{center}
+
+
+\section{Debug tools}
+
+There are a few debug tools built in to the application. Both screens have a debug window that can be toggled by pressing \textbf{Ctrl + D}.
+
+\subsection{Menu}
+
+The debug window allows the user to set a seed for their game. Starting two games with the same seed means the random tiles will generate to the same place, and cards will come in the same sequence.
+
+\subsection{Game}
+
+The debug window allows the user to give themselves resources, resource production, raise their terraform rating, draw cards, raise temperature, raise oxygen and place ocean, greenery or city tiles. \\
+\textbf{Warning!} The debug tool should only be used in the Action State. Usage in other states may cause the application to crash.
+
+Pressing \textbf{F3} toggles the basic camera and the editorial camera. With the editorial camera, the user can use look around with the mouse and fly around with the following keys: \textbf{A}, \textbf{W}, \textbf{S}, \textbf{D}, \textbf{E}, \textbf{Q}\footnote{A - left, W - forward, S - back, D - right, E - up, Q - down}.
