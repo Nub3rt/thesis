@@ -29,6 +29,8 @@ Some parts of the textures and fonts were borrowed from open-source projects.
     \item \href{https://github.com/terraforming-mars/terraforming-mars}{\textbf{Terraforming Mars Open-source:}} (GPL-3.0 License) - The textures for the cards were sourced from here, slightly modified.
     \item \href{https://github.com/SliceOfBread/tm_cardmaker}{\textbf{TM Cardmaker:}} (GPL-3.0 License) - Resource, global parameter and miscellanious textures and fonts were sourced from here. Some were modified for further textures.
     \item \href{https://tools.wwwtyro.net/space-3d/index.html}{\textbf{Space 3D:}} (WTFPLicense) - A space skybox generator tool.
+    \item \href{https://www.freepik.com/legal/terms-of-use#nav-freepik-license}{\textbf{Freepik:}} (Free use) - Terrain.
+    \item \href{http://www.celestiamotherlode.net/catalog/mars.html}{\textbf{The Celestial Motherlode}} - Terrain of Mars.
 \end{itemize}
 
 \subsection{Compilation}
@@ -217,7 +219,7 @@ In the board game, each card has a unique name, and an ID by design. I imported 
 The game features three types of cards:
 
 \begin{compactitem}
-    \item \textbf{Event cards} (orange) only have effects when they are played, and after that they are turned face down. Their tags do not get counted for requirements. Victory points still count at the end of the game.
+    \item \textbf{Event cards} (orange) only have effects when they are played, and after that they are turned face down. Their tags do not get counted for requirements. Victory points given by the card still count at the end of the game.
     \item \textbf{Automated cards} (green) also only have effects when they are played, but they stay face up and their tags are in effect for the rest of the game.
     \item \textbf{Active card} (blue) are similar to automated cards, but they either have an \textit{effect} or an \textit{action}.
     \begin{compactitem}
@@ -498,8 +500,7 @@ On the menu screen, the title and three buttons need to be rendered. These are p
 
 \subsubsection*{Game}
 
-First the game board is rendered. This is done per tile.
-\todo{megírni a véglegesre}
+First the game board is rendered. The board is rendered tile by tile. A Mars terrain is textured over the whole board, and this is offset horizontally and vertically by a random amount each game. The ocean and greenery textures are also projected onto the whole board, and the ocean is moving slowly. There are a few 3D tile types, their types are generated randomly. Lastly, the placement bonuses and player ownership indicating icons get drawn above the tiles. Lighting is achieved using the Phong modell\cite{bui1975illumination}.
 
 Before rendering the HUD, the depth buffer is cleared, as everything here has to overlay what has been rendered so far. First the generation counter, menu button, end button, standard projects, global parameters and resources get rendered. After that, any state-specific rendering is carried out by calling \texttt{Render} on the current state. After that, the card panels get rendered, then the hand, and finally the animations.
 
