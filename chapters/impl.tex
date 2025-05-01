@@ -373,23 +373,23 @@ As in \textit{Model}, I have created a \textit{constants.hpp} file in this proje
 
 \subsubsection*{GL utils}
 
-Some code was borrowed from the computer graphics team, mainly \textit{gl\_utils.*}, \textit{camera.\*} and \textit{spherical\_camera\_manipulator.\*}. I created an interface for camera manipulators and implemented a bobbing camera manipulator that "follows" the mouse on the game screen.
+Some code which we used in the computer graphics course was adapted from the computer graphics team, mainly \textit{gl\_utils.*}, \textit{camera.\*} and \textit{spherical\_camera\_manipulator.\*}. I created an interface for camera manipulators and implemented a bobbing camera manipulator that "follows" the mouse on the game screen.
 
 \subsubsection*{Text rendering}
 
-The application needed some way to render text to the screen. For this, I implemented the \textbf{TextRenderer} static class. The base structure comes from the LearnOpenGL website by Joey de Vries\cite{learnopengl}. I have tweaked it to adapt it to my usage of OpenGL, and added some functionality, like centered text rendering. Note that this class can only render one line texts. At this point, only the first 128 characters of the ASCII character set can be rendered, other characters get rendered as a \texttt{?}.
+The application needed some way to render text to the screen. For this, I implemented the \textbf{TextRenderer} static class. The base structure comes from the LearnOpenGL website by Joey de Vries\cite{learnopengl}. I have tweaked it to adapt it to my usage of OpenGL, and added some functionality, like centered text rendering. Note that this class can only render single line texts. At this point, only the first 128 characters of the ASCII character set can be rendered, other characters get rendered as a "\texttt{?}" character.
 
 \subsubsection*{Animatable}
 
-For user experience and enjoyment, it is important that changes are smoothly animated, and not just abruptly appear on-screen. OpenGL provides no tools for this, so I had to implement tools for this from scratch. Luckily, GLM comes with a variety of easing functions\cite{ease} that we can use for our animations.
+For the sake of user experience and enjoyment, it is important that changes are smoothly animated, and not just abruptly appear on-screen. OpenGL provides no libraries for this, so I had to implement tools for this from scratch. Fortunately, GLM has a variety of easing functions\cite{ease} built in that we can use for our animations.
 
 The \textit{animatable.hpp} header contains two templated data structures as seen in Figure~\ref{fig:class_animations}. \textbf{AnimationParams} is a simple template struct, containing the start and end value of an animation and the duration and elapsed time in seconds. \textbf{Animatable} is a template class which provides richer features for working with events.
 
 At all times \textbf{Animatable} stores the current value it's holding. The type of \textit{\_value} is \textbf{T} which is the template parameter of \textbf{Animatable}. It can be accessed with the indirection operator and the structure dereference operator (\texttt{*} and \texttt{->}). The value can be set at any time with the \texttt{Set} method, but this clears any ongoing animation. The class also contains an easing function, that can be set at any point. Its default value is linear interpolation. \\
-There can either be an ongoing animation effecting this value, or not. This is expressed with the member \textit{\_animation} of type \textbf{std::optional<AnimationParams<T>{}>}. When this optional contains a value, an animation is ongoing. \\
+There can either be an ongoing animation effecting this value, or not. This is expressed with the member \textit{\_animation} of type \textbf{std::optional<AnimationParams<T>{}>}. When this optional contains a value, an animation is currently going on. \\
 An animation can be set in two ways. \texttt{SetAnim} takes a start and end value and a duration. It clears any ongoing animation, and starts a new animation with the supplied parameters. \texttt{UpdateAnim} on the other hand takes in the end value only, a duration and a boolean value \textit{force\_time} indicating to whether or not force duration override.
 \begin{compactitem}
-    \item If there is no animation ongoing, a new animation is set, where the start is the current value of the \textbf{Animatable}, the end is the parameter of the method, and the duration also.
+    \item If there is no animation ongoing, a new animation is set, where the start is the current value of the \textbf{Animatable} and the end and duration values come from the parameters of the method.
     \item If there is an ongoing animation, the end value is updated to the parameter of the method. If \textit{force\_time} is true, the elapsed value gets reset to zero, and the duration gets set to the duration parameter.
 \end{compactitem}
 The class features an \texttt{Update} method that takes the delta time, and updates the value based on the animation and the easing function. If the duration is over, it sets the value to the end value and clears the animation.
@@ -401,7 +401,7 @@ The class features an \texttt{Update} method that takes the delta time, and upda
     \label{fig:class_animations}
 \end{figure}
 
-Since in the application we deal with colors, positions and much more that consist of vector data, it was required that \textbf{glm::vecX} types could be animated too. I solved this with template specialization. in Figure\ref{fig:class_animations}, the template specialization for \textbf{glm::vec3} is shown. An \textbf{Animatable<float>} is stored for each item of the vector. The base methods call their respective methods on each of the animatables. They are also public, so each one can be accessed and set independently. The value is also stored in an auxiliary \textit{\_value} member.
+Since in the application we deal with colors, positions and much more that consist of vector data, it was necessary that \textbf{glm::vecX} types could be animated too. This was accomplished with template specialization. in Figure~\ref{fig:class_animations}, the template specialization for \textbf{glm::vec3} is shown. An \textbf{Animatable<float>} is stored for each item of the vector. The base methods call their respective methods on each of the animatables. They are also public, so each one can be accessed and set independently. The value is also stored in an auxiliary \textit{\_value} member.
 
 \subsubsection*{TileWrapper}
 
@@ -411,15 +411,15 @@ This class wraps one field of the game board. Information for rendering is store
 
 This class wraps a card. It features a state in the form of an enumerated type, which features the following values: \texttt{IDLE}, \texttt{HOVERED}, \texttt{DRAGGING}, \texttt{DRAWING} and \texttt{TO\_HAND}. Another enumerated type \textbf{Visual} stores what kind of visual effect the card currently has. It can have the following values: \texttt{NONE}, \texttt{HIGHLIGHT}, \texttt{ACTION\_HIGHLIGHT}, \texttt{SELL\_HIGHLIGHT} and \texttt{FADED}.
 
-Data for rendering is stored also, for example position, scale, and rotate. These are an instance of \textbf{Animatable}. The class implements methods to set all the easing functions at once.
+Data for rendering is stored also, for example position, scale, and rotation. These are an instance of \textbf{Animatable}. The class implements methods to set all the easing functions at once.
 
 \subsubsection{Views}
 
-\textbf{View} is an abstract class that defines operations a view should or can implement: \texttt{Update}, \texttt{Render}, handling window, keyboard and mouse events.
+\textbf{View} is an abstract class that defines operations a view may implement: \texttt{Update}, \texttt{Render}, handling window, keyboard and mouse events. There are multiple views used in the application, such as the \textbf{MenuView}, or the dynamically created \textbf{GameView}s.
 
 \subsubsection*{Game}
 
-\textbf{GameView} has similar structure to \textbf{GameModel} as supported in Figure~\ref{fig:state_sologameview} and the same thought behind it for extensibility. It also features the \textit{state design pattern}\cite{gamma1994design}, but has slightly different states. There is an additional sell state, where the player can sell their cards, and there is no separate placement confirmation state for post last generation yet.
+\textbf{GameView} has similar structure to \textbf{GameModel} as shown in Figure~\ref{fig:state_sologameview} and the same thought behind it for extensibility. It also features the \textit{state design pattern}\cite{gamma1994design}, but has slightly different states. There is an additional sell state, where the player can sell their cards, and there is no separate placement confirmation state for post last generation yet.
 
 \begin{figure}[H]
     \centering
@@ -432,15 +432,15 @@ Data for rendering is stored also, for example position, scale, and rotate. Thes
 
 \subsubsection*{Menu}
 
-\textbf{MenuView} implements \textbf{View}. This view renders the menu screen, with a title, new game and quit buttons, and if there is an ongoing game, a continue button. When the user selects the new game or the continue button, the view starts a transition to the game screen. For this, it invokes an event asking the Mars to be rendered. It signals the ending of the transition with another event invocation.
+\textbf{MenuView} implements \textbf{View}. This view renders the menu screen, with a title, new game and quit buttons, and if there is an ongoing game, a continue button. When the user selects the new game or the continue button, the view starts a transition to the game screen. For this, it invokes an event asking the Mars to be rendered. It signals the ending of the transition with another event invocation. These events use the same \textbf{View} class that is implemented in the model.
 
 \subsubsection*{App}
 
-The \textbf{App} class holds together the application. It stores an instance of \textbf{MenuView} and optionally an instance of \textbf{GameView}. It features a \textit{\_current\_view} member, which it updates and renders. But it is important to call \texttt{Resize} on every living \textbf{View} instance.
+The \textbf{App} class holds together the application. It stores an instance of \textbf{MenuView} and optionally an instance of \textbf{GameView}. It features a \textit{\_current\_view} member, which it updates and renders. But it is important to call \texttt{Resize} on every living \textbf{View} instance. Otherwise, for example mouse input detection could be broken because the view holds outdated window size values.
 
 \subsubsection*{Builder}
 
-To create a \textbf{GameView} that is populated with its respective \textbf{GameModel} which also needs to be initialized with a \textbf{DeckProvider} and a \textbf{Board}, I used the \textit{builder design pattern}\cite{gamma1994design} to separate the construction of this complex object stack.
+To create a \textbf{GameView} that is populated with its respective \textbf{GameModel} which also needs to be initialized with a \textbf{DeckProvider} and a \textbf{Board}, I utilized the \textit{builder design pattern}\cite{gamma1994design} to separate the construction of this complex object stack.
 
 \textbf{MenuView} uses \textbf{Builder} to create a new \textbf{GameView} when new game is pressed. After that, it passes the created instance back to \textbf{App}.
 
@@ -459,17 +459,17 @@ The entry point of the application. It initializes subsystems, libraries and con
 
 Using \textbf{Animatable}, we can create multiple animations. Since one action (like playing a card) can result in a lot of things happening (raising parameters, gaining resources, placing a tile all because of one card) I implemented an animation queue, where every animation has a set interval until the next animation cannot be started.
 
-So \textbf{Animation} is an abstract class, that implements this behavior. The constructor takes an optional \textit{lockout\_time} duration parameter. The update method handles the decreasing of this member, and then calls the abstract method \texttt{DoUpdate}. The class also contains two optional callables, that get called when the animation starts and ends.
+\textbf{Animation} is an abstract class, that implements this behavior. The constructor takes an optional \textit{lockout\_time} duration parameter. The update method handles the decreasing of this member, and then calls the abstract method \texttt{DoUpdate}. The class also contains two optional callables, that get called when the animation starts and ends.
 
-The \texttt{Render} abstract method is what renders the animation. This is implemented with the \textit{visitor design pattern}\cite{gamma1994design}: when \textbf{GameView} wants to render an animation, it calls this method, in which the children classes can call back the \texttt{RenderAnimation} with themselves as the parameter.
+The \texttt{Render} abstract method is what renders the animation. This is implemented with the \textit{visitor design pattern}\cite{gamma1994design}: when \textbf{GameView} wants to render an animation, it calls this method, in which the children classes can call back the \texttt{RenderAnimation} method of \textbf{GameView} with themselves as the parameter.
 
 Concrete animations can then be derived from this class. For example, the \textbf{TextAnimation} class features a string to render, and its position, color and scale all wrapped in an instance of \textbf{Animatable}. \texttt{DoUpdate} calls \texttt{Update} on the animatables. Rendering is done with the current values from the animatables. \\
-However, this class is pretty flexible, and can be used many ways. For example, \textbf{CardAnimation} only renders once, and it sets the respective \textbf{CardWrapper}'s animatable properties' animations.
+However, this class is pretty flexible, and can be used in many ways. For example, \textbf{CardAnimation} only renders once, and it sets the respective \textbf{CardWrapper}'s animatable properties' animations.
 
-In \textbf{GameView}, there is an animation queue with the pending animation, a vector with ongoing animations, and an \textbf{std::optional<Animation*>} which is the animation that currently locks, meaning no animation can be started. These are updated in every loop by the following steps:
+In \textbf{GameView}, there is an animation queue with the pending animations, a vector with ongoing animations, and a \textbf{std::optional<Animation*>} which is the animation that currently locks, meaning no animation can be started. These are updated in every loop by the following steps:
 \begin{itemize}
-    \item Every ongoing animation gets processed: If it is over, it gets removed from the vector and deleted, else it gets updated.
-    \item If there is a locking animation: if it still has time from its lockout, it simply gets updated, else it gets transferred to the ongoing animations, and updated (if it is not over already in which case it just gets deleted).
+    \item Every ongoing animation gets processed: If it is over, it gets removed from the vector and deleted, otherwise it gets updated.
+    \item In case there is a locking animation: if it still has time from its lockout, it simply gets updated, otherwise it gets transferred to the ongoing animations, and updated (if it is not over already in which case it just gets deleted).
     \item While there is no locking animation and the animation queue is not empty: the next animation gets popped from the queue. If it has a lockout duration, it gets assigned to be the next lockout animation, else it gets added to the ongoing animations.
 \end{itemize}
 
@@ -479,7 +479,7 @@ There is also an implemented but unused feature: animations can be put in a coll
 
 \subsubsection*{App}
 
-\textbf{App} contains the camera for the application. During rendering, the first thing rendered is the skybox. This always gets rendered, so \textbf{App} handles this. The skybox is slowly rotated to achieve a deeper space feeling.
+\textbf{App} contains the camera for the application. During rendering, the first thing rendered is the skybox. This always gets rendered, so \textbf{App} handles this. The skybox is slowly rotated to achieve a feeling of being in deep space.
 
 \subsubsection*{Mouse picking}
 
@@ -487,20 +487,20 @@ By default, OpenGL provides three framebuffers that store render data.
 \begin{itemize}
     \item The color buffer has three float values for every pixel, ranging from 0 to 1. This is the frame being rendered, each of the three values corresponding to one of the tree colors: red, green and blue.
     \item The depth buffer usually has 24 bits for every pixel. It is used to detect if the pixel being drawn is behind the already rendered pixel.
-    \item The stencil buffer usually has 8 bits, so its values can range from 0 to 255. It can be used for various different rendering tricks and after-effects.
+    \item The stencil buffer usually has 8 bits, so its values can range from 0 to 255. It can be used for various different rendering tricks and post-processing effects.
 \end{itemize}
 
-I used the stencil buffer for mouse picking. Each clickable element has an associated ID, and on a mouse down, mouse up or mouse move event we can poll the current value of the corresponding pixel of the stencil buffer. This way, we can identify which element was clicked or hovered over.
+I used the stencil buffer for mouse picking. Each clickable element has an associated ID, and on a mouse down, mouse up or mouse move event I can look up the current value of the corresponding pixel of the stencil buffer. This way, we can identify which element was clicked or hovered over.
 
 What ID to render can be set with the \texttt{SetStencilRef} method, but after rendering, it has to be set back to its original value, by calling \texttt{SetStencilRef} again without a parameter.
 
 \subsubsection*{Menu}
 
-On the menu screen, the title and three buttons need to be rendered. These are pre-made \textit{.png} files, as during the transition they need to be rendered 3D. The three buttons can be hovered and clicked.
+On the menu screen, the title and three buttons need to be rendered. For these I used pre-made \textit{.png} files, as during the transition where the camera moves and turns, they need to be rendered in 3D. The three buttons can be hovered and clicked.
 
 \subsubsection*{Game}
 
-First the game board is rendered. The board is rendered tile by tile. A Mars terrain is textured over the whole board, and this is offset horizontally and vertically by a random amount each game. The ocean and greenery textures are also projected onto the whole board, and the ocean is moving slowly. There are a few 3D tile types, their types are generated randomly. Lastly, the placement bonuses and player ownership indicating icons get drawn above the tiles. Lighting is achieved using the Phong modell\cite{bui1975illumination}.
+First the game board is rendered. The board is rendered tile by tile. A Mars terrain is textured over the whole board, and this is offset horizontally and vertically by a random amount each game. The ocean and greenery textures are also projected onto the whole board, and the ocean is moving slowly. There are a few 3D tile types, their types are generated randomly, and each one is rotated randomly. Lastly, the placement bonuses and player ownership indicating icons get drawn above the tiles. Lighting is achieved using the Phong modell\cite{bui1975illumination}.
 
 Before rendering the HUD, the depth buffer is cleared, as everything here has to overlay what has been rendered so far. First the generation counter, menu button, end button, standard projects, global parameters and resources get rendered. After that, any state-specific rendering is carried out by calling \texttt{Render} on the current state. After that, the card panels get rendered, then the hand, and finally the animations.
 
@@ -508,12 +508,12 @@ HUD rendering is basically 2D rendering, so it does not use the camera. Position
 
 Cards and resources get their textures from sprite sheets. Card textures are derived from their \textbf{CardID}'s underlying value. Vertical and horizontal indices and strides are calculated in code, then get passed to the shaders with uniforms.
 
-Cards can have a colored highlight around them. This was done in the fragment shader. If the alpha value is big, a highlight will be drawn. The alpha value of the highlight is based on the distance from the edge. The threshold that represents the highlight being a solid color moves in and out to create a pulsating effect.
+Cards can have a colored highlight around them. This was achieved in the fragment shader. If the alpha value of the texture is big, a highlight will be drawn. The color is received in a uniform variable and the new alpha gets calculated. The alpha value of the highlight is based on the distance from the edge. The threshold that represents the highlight being a solid color moves in and out to create a pulsating effect.
 
 
 \section{Testing}
 
-I wrote unit tests for the model using Google's Google Test framework.
+I wrote unit tests for the model using the Google Test framework.
 
 \begin{center}
     \begin{longtable}{ | m{0.3\linewidth} | m{0.5\linewidth} | }
@@ -522,7 +522,7 @@ I wrote unit tests for the model using Google's Google Test framework.
         \hline \hline
         \endhead
 
-        Event :: NoP aram & Test the class with no tmeplate arguments. Invoking, setting callback, clearing. \\
+        Event :: No Param & Test the class with no template arguments. Invoking, setting callback, clearing. \\
         \hline
         Event :: With Params & Test the class with different template arguments. \\
         \hline
@@ -534,7 +534,7 @@ I wrote unit tests for the model using Google's Google Test framework.
         Tile : Apply Placement Bonuses & Test player receiving placement bonuses. \\
         \hline
 
-        TharsisBoard :: Get Set & Test trivial getters and seters. \\
+        TharsisBoard :: Get Set & Test trivial getters and setters. \\
         \hline
         TharsisBoard :: Place Tile & Test tile placement and placement bonus received. \\
         \hline
@@ -580,7 +580,7 @@ I wrote unit tests for the model using Google's Google Test framework.
         \hline
         Cards :: Event & Thoroughly test an event type card. \\
         \hline
-        Cards :: Automated & Thoroughly rest an automated type card. \\
+        Cards :: Automated & Thoroughly test an automated type card. \\
         \hline
         Cards : Active With Action & Thoroughly test an action card. \\
         \hline
@@ -594,10 +594,9 @@ I wrote unit tests for the model using Google's Google Test framework.
     \end{longtable}
 \end{center}
 
-The test pass, and they have helped when some parts of the model were tweaked.
+The tests pass, and they proved useful in validating the code when some parts of the model were tweaked.
 
-In the case of real-time applications with graphics rendering, testing the view with unit test is 
-not a reliable option. One of the reasons is that while running calculations on the GPU increase speed greatly, it does not allow for accessing in-between results of the calculations. Furthermore, computer graphics in itself is a field where almost everything is an approximation.
+In the case of real-time applications with graphics rendering, testing the view with unit tests is not a reliable option. One of the reasons is that while running calculations on the GPU increase speed greatly, it does not allow for accessing intermediate results of the calculations. Furthermore, computer graphics in itself is a field where almost everything is an approximation.
 
 For these reasons, I tested the application manually and documented each test.
 
@@ -612,9 +611,9 @@ For these reasons, I tested the application manually and documented each test.
         \hline
         Quit & Clicking on the quit button exits the application & \checkmark \\
         \hline
-        New game & Clicking new game starts transition to the gmae screen. At the end of the transition, the game screen is visible with a freshly started game. & \checkmark \\
+        New game & Clicking new game starts transition to the game screen. At the end of the transition, the game screen is visible with a freshly started game. & \checkmark \\
         \hline
-        Continue & If the continue button is visible, clicking on it starts transition to the game screen. At the end, the last played game is restored and can be continued. & \checkmark \\
+        Continue & If the continue button is visible, clicking on it starts a transition to the game screen. At the end, the last played game is restored and can be continued. & \checkmark \\
         \hline
         Menu button & Clicking the button labeled menu on the game screen starts transition to the menu screen. The continue button is now visible. & \checkmark \\
         \hline
@@ -626,11 +625,11 @@ For these reasons, I tested the application manually and documented each test.
         \hline
         Use sell cards & In the action state, hovering over the sell cards standard project enlarges it. Clicking on it enters the sell state, making all cards have a red highlight. & \checkmark \\
         \hline
-        Sell cards & In the sell state, all cards can be dragged out. Dragging the over the player line gives them a faded effect. Releasing them here sells them. & \checkmark \\
+        Sell cards & In the sell state, all cards can be dragged out. Dragging the card over the player line gives them a faded effect. Releasing them here sells them. & \checkmark \\
         \hline
         Exit sell state & In the sell state the end button is labeled Done. Clicking on it exits the sell state. & \checkmark \\
         \hline
-        Use standard projects & Hovering over standard project makes them enlarges them if they can be used. If usable, clicking on it performs the action. & \checkmark \\
+        Use standard projects & Hovering over standard project enlarges them if they can be used. If usable, clicking on it performs the action. & \checkmark \\
         \hline
         Panels & Clicking on a panel or pressing their respective key opens or closes the panel. Clicking on cards by default does nothing. & \checkmark \\
         \hline
@@ -651,10 +650,12 @@ For these reasons, I tested the application manually and documented each test.
     \end{longtable}
 \end{center}
 
+The game was also tested by playing through to completion multiple times, including verification of win and lose conditions.
+
 
 \section{Debug tools}
 
-There are a few debug tools built in to the application. Both screens have a debug window that can be toggled by pressing \textbf{Ctrl + D}.
+There are a few debug tools built in to the application. Both views have a debug window that can be toggled by pressing \textbf{Ctrl + D}.
 
 \subsection{Menu}
 

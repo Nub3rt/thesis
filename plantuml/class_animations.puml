@@ -25,7 +25,7 @@ package ::view {
         + UpdateAnim( T, duration : float, bool )
         + SetAnim( start : T, end : T, duration : float )
         + SetEase( float => float )
-        + Update( delta : float)
+        + Update( delta : float )
     }
 
     class "Animatable" as anim_vec3 {
@@ -46,7 +46,7 @@ package ::view {
         + UpdateAnim( vec3, duration : float, bool )
         + SetAnim( start : vec3, end : vec3, duration : float )
         + SetEase( float => float )
-        + Update( delta : float)
+        + Update( delta : float )
     }
 
     anim_generic -> AnimationParams
